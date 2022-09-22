@@ -1,0 +1,35 @@
+syntax = "proto2";
+
+package model;
+
+option java_multiple_files = true;
+option java_package = "uc.mei.is.protos";
+option java_outer_classname = "School";
+
+message Timestamp {
+  required int32 year = 1;
+  required int32 month = 2;
+  required int32 day = 3;
+  required int32 hour = 4;
+  required int32 minute = 5;
+  required int32 second = 6;
+}
+
+message Student {
+  required int32 id = 1;
+  required string name = 2;
+  required int32 phoneNumber = 3;
+  required string address = 4;
+  required string gender = 5 ;
+  required Timestamp birthDate = 6;
+  required Timestamp registrationDate = 7;
+}
+
+message Teacher {
+  required int32 id = 1;
+  required string name = 2;
+  required int32 phoneNumber = 3;
+  required Timestamp birthDate = 4;
+  required string address = 5;
+  repeated Student students = 6;
+}
