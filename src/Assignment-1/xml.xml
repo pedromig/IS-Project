@@ -2,15 +2,15 @@
 <school>
    <teachers id="1">
       <name>João</name>
-      <birthDate>2022-09-21T20:34:52.314+01:00</birthDate>
+      <birthDate>2022-09-22T16:26:51.587+01:00</birthDate>
       <phoneNumber>919999999</phoneNumber>
       <address>Coimbra</address>
       <students id="1">
          <name>Tiago</name>
          <phoneNumber>911111111</phoneNumber>
          <gender>Male</gender>
-         <birthDate>2022-09-21T20:34:52.314+01:00</birthDate>
-         <registrationDate>2022-09-21T20:34:52.314+01:00</registrationDate>
+         <birthDate>2022-09-22T16:26:51.587+01:00</birthDate>
+         <registrationDate>2022-09-22T16:26:51.587+01:00</registrationDate>
          <address>Lisboa</address>
          <teacherId>1</teacherId>
       </students>
@@ -18,23 +18,23 @@
          <name>António</name>
          <phoneNumber>912345678</phoneNumber>
          <gender>Male</gender>
-         <birthDate>2022-09-21T20:34:52.314+01:00</birthDate>
-         <registrationDate>2022-09-21T20:34:52.314+01:00</registrationDate>
+         <birthDate>2022-09-22T16:26:51.587+01:00</birthDate>
+         <registrationDate>2022-09-22T16:26:51.587+01:00</registrationDate>
          <address>Coimbra</address>
          <teacherId>1</teacherId>
       </students>
    </teachers>
    <teachers id="2">
       <name>Diogo</name>
-      <birthDate>2022-09-21T20:34:52.314+01:00</birthDate>
+      <birthDate>2022-09-22T16:26:51.587+01:00</birthDate>
       <phoneNumber>918888888</phoneNumber>
       <address>Coimbra</address>
       <students id="2">
          <name>Maria</name>
          <phoneNumber>933333333</phoneNumber>
          <gender>Female</gender>
-         <birthDate>2022-09-21T20:34:52.314+01:00</birthDate>
-         <registrationDate>2022-09-21T20:34:52.314+01:00</registrationDate>
+         <birthDate>2022-09-22T16:26:51.587+01:00</birthDate>
+         <registrationDate>2022-09-22T16:26:51.587+01:00</registrationDate>
          <address>Porto</address>
          <teacherId>2</teacherId>
       </students>

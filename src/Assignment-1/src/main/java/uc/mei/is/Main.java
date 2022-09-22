@@ -6,9 +6,16 @@ import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import uc.mei.is.model.Teacher;
 import uc.mei.is.model.School;
@@ -17,8 +24,18 @@ import uc.mei.is.model.Student;
 public class Main {
 
     public static void main(String[] args) {
+        long start = System.currentTimeMillis();
+        
         test1("xml.xml");
+        compressGZIP("xml.xml", "comXml.zip");
+
+        decompressGZIP("comXml.zip", "xml.xml");
         unmarshallData("xml.xml");
+        
+        long finish = System.currentTimeMillis();
+        long timeElapsed = finish - start;
+        System.out.println("Time elapsed: " + timeElapsed + "ms");
+        
     }
 
     private static void test1(String fileName) {
@@ -40,9 +57,7 @@ public class Main {
         School school = new School(teachers);
         
 
-        if(marshallData(school, fileName)) {
-            System.out.println("All fine");
-        } else {
+        if(!marshallData(school, fileName)) {
             System.out.println("Error");
         }
 
@@ -70,7 +85,6 @@ public class Main {
             // output to a xml file
             jaxbMarshaller.marshal(school, new File(fileName));
 
-
             // output to console
             //jaxbMarshaller.marshal(school, System.out);
 
@@ -96,7 +110,7 @@ public class Main {
 
             School o = (School) jaxbUnmarshaller.unmarshal(file);
 
-            System.out.println(o);
+            //System.out.println(o);
             return true;
 
         } catch (JAXBException e) {
@@ -104,5 +118,64 @@ public class Main {
         }
         return false;
 
+    }
+
+    private static boolean compressGZIP(String filenameIn, String filenameOut) {
+        byte[] buffer = new byte[1024];
+        try
+        {
+            GZIPOutputStream os = 
+                    new GZIPOutputStream(new FileOutputStream(filenameOut));
+                      
+            FileInputStream in =
+                    new FileInputStream(filenameIn);
+              
+            int totalSize;
+            while((totalSize = in.read(buffer)) > 0 )
+            {
+                os.write(buffer, 0, totalSize);
+            }
+              
+            in.close();
+            os.finish();
+            os.close();
+              
+            return true;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private static boolean decompressGZIP(String filenameComp, String fileNameout)
+    {
+        byte[] buffer = new byte[1024];
+        try
+        {
+            GZIPInputStream is = 
+                    new GZIPInputStream(new FileInputStream(filenameComp));
+                      
+            FileOutputStream out =
+                    new FileOutputStream(fileNameout);
+              
+            int totalSize;
+            while((totalSize = is.read(buffer)) > 0 )
+            {
+                out.write(buffer, 0, totalSize);
+            }
+              
+            out.close();
+            is.close();
+              
+            return true;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+          
     }
 }
