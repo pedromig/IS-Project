@@ -1,9 +1,8 @@
-package uc.mei.is.model;
+package uc.mei.is.model.xml;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.util.ArrayList;
@@ -15,13 +14,12 @@ import java.util.List;
 public class Teacher {
     @XmlAttribute
     private int id;
-    
+
     private String name;
     private Calendar birthDate;
     private int phoneNumber;
     private String address;
-    private List<Student> students;
-
+    private ArrayList<Student> students;
 
     public Teacher() {}
 
@@ -34,12 +32,8 @@ public class Teacher {
         this.students = new ArrayList<Student>();
     }
 
-    public Teacher(int id, String name, Calendar birthDate, int phoneNumber, String address, List<Student> students) {
-        this.id = id;
-        this.name = name;
-        this.birthDate = birthDate;
-        this.phoneNumber = phoneNumber;
-        this.address = address;
+    public Teacher(int id, String name, Calendar birthDate, int phoneNumber, String address, ArrayList<Student> students) {
+        this(id, name, birthDate, phoneNumber, address);
         this.students = students;
     }
 
@@ -88,7 +82,7 @@ public class Teacher {
         return this.students;
     }
 
-    public void setStudents(List<Student> students) {
+    public void setStudents(ArrayList<Student> students) {
         this.students = students;
     }
 
@@ -98,11 +92,11 @@ public class Teacher {
 
     @Override
     public String toString() {
-        String str = this.id + " _ " + this.name + "\n\tStudents:\n";
-        for(Student student : students) {
-            str += "\t\t" + student.toString() + "\n";
+        StringBuilder str = new StringBuilder(this.id + " _ " + this.name + "\n\tStudents:\n");
+        for (Student student : students) {
+            str.append("\t\t").append(student.toString()).append("\n");
         }
-        return str;
+        return str.toString();
     }
 
 }

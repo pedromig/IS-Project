@@ -1,4 +1,4 @@
-package uc.mei.is.model;
+package uc.mei.is.model.xml;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;

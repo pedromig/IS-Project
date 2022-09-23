@@ -8,22 +8,21 @@ import jakarta.xml.bind.Unmarshaller;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
-import uc.mei.is.model.Teacher;
-import uc.mei.is.model.School;
-import uc.mei.is.model.Student;
+import uc.mei.is.model.xml.Teacher;
+import uc.mei.is.model.xml.School;
+import uc.mei.is.model.xml.Student;
 
-public class Main {
+public class XmlApp {
 
     public static void main(String[] args) {
-        test1("xml.xml");
-        unmarshallData("xml.xml");
+        test1("xml.xml"); unmarshallData("xml.xml");
     }
 
+
     private static void test1(String fileName) {
-        List<Teacher> teachers = new ArrayList<Teacher>();
-        List<Student> students = new ArrayList<Student>();
+        ArrayList<Teacher> teachers = new ArrayList<Teacher>();
+        ArrayList<Student> students = new ArrayList<Student>();
 
         Calendar c1 = Calendar.getInstance();
         teachers.add(new Teacher(1, "João", c1, 919999999, "Coimbra"));
@@ -38,9 +37,9 @@ public class Main {
         addRelStudentTeacher(students.get(2), teachers.get(0));
 
         School school = new School(teachers);
-        
 
-        if(marshallData(school, fileName)) {
+
+        if (marshallData(school, fileName)) {
             System.out.println("All fine");
         } else {
             System.out.println("Error");
@@ -59,8 +58,7 @@ public class Main {
 
         try {
 
-            jaxbContext = org.eclipse.persistence.jaxb.JAXBContextFactory
-                    .createContext(new Class[]{School.class}, null);
+            jaxbContext = org.eclipse.persistence.jaxb.JAXBContextFactory.createContext(new Class[]{ School.class }, null);
 
             Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
@@ -78,8 +76,7 @@ public class Main {
 
         } catch (JAXBException e) {
             e.printStackTrace();
-        }
-        return false;
+        } return false;
     }
 
     private static boolean unmarshallData(String fileName) {
@@ -87,8 +84,7 @@ public class Main {
 
         try {
 
-            jaxbContext = org.eclipse.persistence.jaxb.JAXBContextFactory
-                    .createContext(new Class[]{School.class}, null);
+            jaxbContext = org.eclipse.persistence.jaxb.JAXBContextFactory.createContext(new Class[]{ School.class }, null);
 
             File file = new File(fileName);
 
@@ -96,13 +92,11 @@ public class Main {
 
             School o = (School) jaxbUnmarshaller.unmarshal(file);
 
-            System.out.println(o);
-            return true;
+            System.out.println(o); return true;
 
         } catch (JAXBException e) {
             e.printStackTrace();
-        }
-        return false;
+        } return false;
 
     }
 }
