@@ -20,7 +20,7 @@ public class Teacher {
     private Calendar birthDate;
     private int phoneNumber;
     private String address;
-    private List<Student> students;
+    private List<Integer> studentsIds;
 
 
     public Teacher() {}
@@ -31,16 +31,16 @@ public class Teacher {
         this.birthDate = birthDate;
         this.phoneNumber = phoneNumber;
         this.address = address;
-        this.students = new ArrayList<Student>();
+        this.studentsIds = new ArrayList<Integer>();
     }
 
-    public Teacher(int id, String name, Calendar birthDate, int phoneNumber, String address, List<Student> students) {
+    public Teacher(int id, String name, Calendar birthDate, int phoneNumber, String address, List<Integer> studentsIds) {
         this.id = id;
         this.name = name;
         this.birthDate = birthDate;
         this.phoneNumber = phoneNumber;
         this.address = address;
-        this.students = students;
+        this.studentsIds = studentsIds;
     }
 
 
@@ -84,24 +84,21 @@ public class Teacher {
         this.address = address;
     }
 
-    public List<Student> getStudents() {
-        return this.students;
+    public List<Integer> getStudentsIds() {
+        return this.studentsIds;
     }
 
-    public void setStudents(List<Student> students) {
-        this.students = students;
+    public void setStudentsIds(List<Integer> studentsIds) {
+        this.studentsIds = studentsIds;
     }
 
     public void addStudent(Student student) {
-        this.students.add(student);
+        this.studentsIds.add(student.getId());
     }
 
     @Override
     public String toString() {
-        String str = this.id + " _ " + this.name + "\n\tStudents:\n";
-        for(Student student : students) {
-            str += "\t\t" + student.toString() + "\n";
-        }
+        String str = this.id + " _ " + this.name;
         return str;
     }
 

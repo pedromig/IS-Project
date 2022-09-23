@@ -12,12 +12,14 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class School {
     private List<Teacher> teachers;
+    private List<Student> students;
 
 
     public School() {};
     
-    public School(List<Teacher> teachers) {
+    public School(List<Teacher> teachers, List<Student> students) {
         this.teachers = teachers;
+        this.students = students;
     }
 
     public List<Teacher> getTeachers() {
@@ -28,11 +30,23 @@ public class School {
 		this.teachers = teachers;
 	}
 
+    public List<Student> getStudents() {
+		return this.students;
+	}
+
+	public void setStudents(List<Student> students) {
+		this.students = students;
+	}
+
     @Override
     public String toString() {
         String str = "Teachers:\n";
         for(Teacher teacher : teachers) {
-            str += "\t" + teacher.toString();
+            str += "\t" + teacher.toString() + "\n";
+        }
+        str += "Students:\n";
+        for(Student student : students) {
+            str += "\t" + student.toString() + "\n";
         }
         return str;
     }

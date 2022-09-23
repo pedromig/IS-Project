@@ -29,12 +29,14 @@ public class Main {
         test1("xml.xml");
         compressGZIP("xml.xml", "comXml.zip");
 
+        long mid = System.currentTimeMillis();
+
         decompressGZIP("comXml.zip", "xml.xml");
         unmarshallData("xml.xml");
         
         long finish = System.currentTimeMillis();
-        long timeElapsed = finish - start;
-        System.out.println("Time elapsed: " + timeElapsed + "ms");
+        System.out.println("Time to encode: " + (mid - start) + "ms");
+        System.out.println("Time to decode: " + (finish - mid) + "ms");
         
     }
 
@@ -54,7 +56,7 @@ public class Main {
         addRelStudentTeacher(students.get(1), teachers.get(1));
         addRelStudentTeacher(students.get(2), teachers.get(0));
 
-        School school = new School(teachers);
+        School school = new School(teachers, students);
         
 
         if(!marshallData(school, fileName)) {
@@ -110,7 +112,7 @@ public class Main {
 
             School o = (School) jaxbUnmarshaller.unmarshal(file);
 
-            //System.out.println(o);
+            System.out.println(o);
             return true;
 
         } catch (JAXBException e) {
