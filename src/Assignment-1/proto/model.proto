@@ -3,12 +3,12 @@ syntax = "proto2";
 package model;
 
 option java_multiple_files = true;
-option java_package = "uc.mei.is.model.proto.prototypes";
+option java_package = "uc.mei.is.model.proto";
 option java_outer_classname = "Model";
 
 message Student {
   required int32 id = 1;
-  required int32 teacher = 2 ;
+  optional int32 teacher = 2 ;
 
   required string name = 3;
   required int32 phoneNumber = 4;
