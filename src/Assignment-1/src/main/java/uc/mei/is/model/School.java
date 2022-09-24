@@ -36,7 +36,8 @@ public class School implements Serializable {
     }
 
     public School(ArrayList<Student> students, ArrayList<Teacher> teachers) {
-        this.students = students; this.teachers = teachers;
+        this.students = students; 
+        this.teachers = teachers;
     }
 
     public void addStudent(Student... students) {
