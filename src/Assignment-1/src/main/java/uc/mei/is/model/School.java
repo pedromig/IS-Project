@@ -111,8 +111,11 @@ public class School implements Serializable {
 
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-            jaxbMarshaller.marshal(this, new File(filePath));
-        } catch (JAXBException e) {
+            try (FileOutputStream f = new FileOutputStream(filePath)) {
+                jaxbMarshaller.marshal(this, f);
+            }
+            
+        } catch (IOException | JAXBException e) {
             e.printStackTrace();
         }
     }
@@ -168,8 +171,11 @@ public class School implements Serializable {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(School.class);
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            school = (School) jaxbUnmarshaller.unmarshal(new File(filePath));
-        } catch (JAXBException e) {
+            try (FileInputStream f = new FileInputStream(filePath)) {
+                school = (School) jaxbUnmarshaller.unmarshal(f);
+            }
+            
+        } catch (IOException | JAXBException e) {
             e.printStackTrace();
         }
         return school;

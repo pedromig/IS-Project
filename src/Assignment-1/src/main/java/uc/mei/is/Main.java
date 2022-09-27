@@ -7,44 +7,61 @@ import uc.mei.is.model.Teacher;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 public class Main {
 
     public static void main(String[] args) {
         long seed = 1000;
-        int supervisorChange = 95;  // 0 to 100 %
-        School school = generateCases(seed, 200, 500, "src\\main\\resources\\addresses.csv", "src\\main\\resources\\names.csv",supervisorChange);
-    
-        /*Calendar calendar = Calendar.getInstance();
+        int supervisorChance = 95;  // 0 to 100 %
+        int nTeachers = 200;
+        int nStudents = 500;
+        School school = generateCases(seed, nTeachers, nStudents, "src\\main\\resources\\addresses.csv", "src\\main\\resources\\names.csv", supervisorChance);
 
-        School school = new School();
+        int repeat = 50;
 
-        Student tiago = new Student(1, "Tiago", 911111111, "Male", calendar, calendar, "Lisboa");
-        Student maria = new Student(2, "Maria", 933333333, "Female", calendar, calendar, "Porto");
-        Student antonio = new Student(3, "António", 912345678, "Male", calendar, calendar, "Coimbra");
+        ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
 
-        Teacher joao = new Teacher(1, "João", calendar, 919999999, "Coimbra");
-        Teacher diogo = new Teacher(2, "Diogo", calendar, 918888888, "Coimbra");
+        results.add(loopTest(repeat, () -> school.writeToProto("a.bin"), "True,Proto"));
+        results.add(loopTest(repeat, () -> School.parseFromProto("a.bin"), "False,Proto"));
+        results.add(loopTest(repeat, () -> school.writeToXml("b.xml"), "True,XML"));
+        results.add(loopTest(repeat, () -> School.parseFromXml("b.xml"), "False,XML"));
+        results.add(loopTest(repeat, () -> school.writeToXmlGzip("c.xml.gz"), "True,XML + GZIP"));
+        results.add(loopTest(repeat, () -> School.parseFromXmlGZip("c.xml.gz"), "False,XML + GZIP"));
 
-        school.addStudent(tiago, maria, antonio);
-        school.addTeacher(joao, diogo);
+        writeFile("res.csv", results, nTeachers, nStudents, seed);
+    }
 
-        school.setSupervisor(joao, tiago);
-        school.setSupervisor(joao, maria);
-        school.setSupervisor(diogo, antonio);*/
+    public static void writeFile(String path, ArrayList<ArrayList<String>> results, int nTeachers, int nStudents, long seed) {
+        try {
+            PrintWriter out = new PrintWriter(path);
+            out.write("Marshall,Technology,Number Teachers,Number Students,Seed,Run,Time\n");
+            for (ArrayList<String> line : results) {
+                for (int i = 1; i < line.size(); i++) {
+                    out.write(line.get(0) + "," + nTeachers + "," + nStudents + "," + seed + "," + i + "," + line.get(i) + "\n");
+                }
+            }
+             out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-        System.out.println("Marshall Proto: " + timeit(() -> school.writeToProto("a.bin")));
-        System.out.println("Unmarshall Proto: " + timeit(() -> School.parseFromProto("a.bin")));
-
-        System.out.println("Marshall XML: " + timeit(() -> school.writeToXml("b.xml")));
-        System.out.println("Unmarshall XML: " + timeit(() -> School.parseFromXml("b.xml")));
-
-        System.out.println("Marshall XML + GZIP: " + timeit(() -> school.writeToXmlGzip("c.xml.gz")));
-        System.out.println("Marshall XML + GZIP: " + timeit(() -> School.parseFromXmlGZip("c.xml.gz")));
+    public static ArrayList<String> loopTest(Integer repeat, Runnable callback, String title) {
+        ArrayList<String> arr = new ArrayList<String>(List.of(title));
+        for (int i = 0; i < repeat; i++) {
+            long start = System.currentTimeMillis();
+            callback.run();
+            long end = System.currentTimeMillis();
+            arr.add(String.valueOf(end - start));
+        }
+        return arr;
     }
     
 
@@ -55,7 +72,7 @@ public class Main {
         return end - start;
     }
 
-    public static School generateCases(Long seed, Integer nTeachers, Integer nStudents, String filenameAdresses, String filenameNames, Integer supervisorChange) {
+    public static School generateCases(Long seed, Integer nTeachers, Integer nStudents, String filenameAdresses, String filenameNames, Integer supervisorChance) {
 
         // read files
         ArrayList<String> addresses = loadFile(filenameAdresses);
@@ -92,7 +109,7 @@ public class Main {
 
         // add supervisors
         for(Student s : students) {
-            if(rnd.nextInt(100) < supervisorChange) {
+            if(rnd.nextInt(100) < supervisorChance) {
                 Teacher t = teachers.get(rnd.nextInt(teachers.size()));
                 school.setSupervisor(t, s);
             }
