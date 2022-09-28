@@ -15,11 +15,20 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) {
-        long seed = 1000;
-        int supervisorChange = 95;  // 0 to 100 %
-        School school = generateCases(seed, 200, 500, "src\\main\\resources\\addresses.csv", "src\\main\\resources\\names.csv",supervisorChange);
+        // long seed = 1000;
+        // int supervisorChange = 95;  // 0 to 100 %
+        // School school = generateCases(
+        //     seed,
+        //     200,
+        //     500,
+        //     //"src\\main\\resources\\addresses.csv",
+        //     "src/main/resources/addresses.csv",
+        //     // "src\\main\\resources\\names.csv",
+        //     "src/main/resources/names.csv",
+        //     supervisorChange
+        // );
     
-        /*Calendar calendar = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
 
         School school = new School();
 
@@ -35,18 +44,18 @@ public class Main {
 
         school.setSupervisor(joao, tiago);
         school.setSupervisor(joao, maria);
-        school.setSupervisor(diogo, antonio);*/
+        school.setSupervisor(diogo, antonio);
 
-        System.out.println("Marshall Proto: " + timeit(() -> school.writeToProto("a.bin")));
-        System.out.println("Unmarshall Proto: " + timeit(() -> School.parseFromProto("a.bin")));
+        System.out.println("Marshall Proto: " + timeit(() -> school.writeTo("a.bin")));
+        System.out.println("Unmarshall Proto: " + timeit(() -> School.parseFrom("a.bin")));
 
-        System.out.println("Marshall XML: " + timeit(() -> school.writeToXml("b.xml")));
-        System.out.println("Unmarshall XML: " + timeit(() -> School.parseFromXml("b.xml")));
+        System.out.println("Marshall XML + GZIP: " + timeit(() -> school.writeTo("c.xml.gz")));
+        System.out.println("Marshall XML + GZIP: " + timeit(() -> School.parseFrom("c.xml.gz")));
 
-        System.out.println("Marshall XML + GZIP: " + timeit(() -> school.writeToXmlGzip("c.xml.gz")));
-        System.out.println("Marshall XML + GZIP: " + timeit(() -> School.parseFromXmlGZip("c.xml.gz")));
+        System.out.println("Marshall XML: " + timeit(() -> school.writeTo("b.xml")));
+        System.out.println("Unmarshall XML: " + timeit(() -> School.parseFrom("b.xml")));
     }
-    
+
 
     public static long timeit(Runnable callback) {
         long start = System.currentTimeMillis();
@@ -55,7 +64,8 @@ public class Main {
         return end - start;
     }
 
-    public static School generateCases(Long seed, Integer nTeachers, Integer nStudents, String filenameAdresses, String filenameNames, Integer supervisorChange) {
+    public static School generateCases(Long seed, Integer nTeachers, Integer nStudents, String filenameAdresses,
+                                       String filenameNames, Integer supervisorChange) {
 
         // read files
         ArrayList<String> addresses = loadFile(filenameAdresses);
@@ -71,45 +81,46 @@ public class Main {
         ArrayList<Teacher> teachers = new ArrayList<Teacher>();
         ArrayList<Student> students = new ArrayList<Student>();
 
-        for(int i = 0; i < nTeachers; i++) {
-            teachers.add(new Teacher(idsOutT.remove(0), names.get(rnd.nextInt(names.size())), 
-                                    generateCalendar(rnd), randomNumberSize(rnd, 9), 
-                                    addresses.get(rnd.nextInt(addresses.size()))));
+        for (int i = 0; i < nTeachers; i++) {
+            teachers.add(
+                new Teacher(idsOutT.remove(0), names.get(rnd.nextInt(names.size())),
+                    generateCalendar(rnd), randomNumberSize(rnd, 9),
+                    addresses.get(rnd.nextInt(addresses.size()))
+                )
+            );
         }
 
-        for(int i = 0; i < nStudents; i++) {
+        for (int i = 0; i < nStudents; i++) {
             String gender = "";
-            if(rnd.nextBoolean()) {
+            if (rnd.nextBoolean()) {
                 gender = "Male";
-            } else { gender = "Female";}
+            } else {gender = "Female";}
 
-            students.add(new Student(idsOutS.remove(0), names.get(rnd.nextInt(names.size())), 
-                                    randomNumberSize(rnd, 9), gender, generateCalendar(rnd), 
-                                    generateCalendar(rnd), addresses.get(rnd.nextInt(addresses.size()))));
+            students.add(new Student(idsOutS.remove(0), names.get(rnd.nextInt(names.size())),
+                randomNumberSize(rnd, 9), gender, generateCalendar(rnd),
+                generateCalendar(rnd), addresses.get(rnd.nextInt(addresses.size()))
+            ));
         }
 
         School school = new School(students, teachers);
 
         // add supervisors
-        for(Student s : students) {
-            if(rnd.nextInt(100) < supervisorChange) {
+        for (Student s : students) {
+            if (rnd.nextInt(100) < supervisorChange) {
                 Teacher t = teachers.get(rnd.nextInt(teachers.size()));
                 school.setSupervisor(t, s);
             }
         }
-
         return school;
     }
 
     public static ArrayList<String> loadFile(String fileName) {
         ArrayList<String> lines = new ArrayList<String>();
         try (Scanner s = new Scanner(new File(fileName))) {
-            while (s.hasNextLine()){
+            while (s.hasNextLine()) {
                 lines.add(s.nextLine());
             }
-            s.close();
-
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return lines;
@@ -118,7 +129,7 @@ public class Main {
     public static ArrayList<Integer> generateIds(Random rnd, Integer number) {
         Set<Integer> idsOut = new HashSet<>();
 
-        while(idsOut.size() != number) {
+        while (idsOut.size() != number) {
             idsOut.add(Math.abs(rnd.nextInt()));
         }
 
@@ -130,7 +141,7 @@ public class Main {
 
         int year = rnd.nextInt(1900, 2010);
         int dayOfYear = rnd.nextInt(1, gc.getActualMaximum(Calendar.DAY_OF_YEAR));
-        
+
         gc.set(Calendar.YEAR, year);
         gc.set(Calendar.DAY_OF_YEAR, dayOfYear);
 
@@ -139,8 +150,8 @@ public class Main {
 
     public static Integer randomNumberSize(Random rnd, int digCount) {
         StringBuilder sb = new StringBuilder(digCount);
-        for(int i=0; i < digCount; i++)
-            sb.append((char)('0' + rnd.nextInt(10)));
+        for (int i = 0; i < digCount; i++)
+            sb.append((char) ('0' + rnd.nextInt(10)));
         return Integer.parseInt(sb.toString());
     }
 

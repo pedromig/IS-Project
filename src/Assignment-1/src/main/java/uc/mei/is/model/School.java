@@ -24,11 +24,10 @@ import java.util.zip.GZIPOutputStream;
 public class School implements Serializable {
     private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
-    @XmlElement(name = "student")
-    private final ArrayList<Student> students;
-
     @XmlElement(name = "teacher")
     private final ArrayList<Teacher> teachers;
+    @XmlElement(name = "student")
+    private final ArrayList<Student> students;
 
     public School() {
         this.students = new ArrayList<>();
@@ -136,7 +135,7 @@ public class School implements Serializable {
             case "xml.gz" -> School.parseFromXmlGZip(filePath);
             case "bin" -> School.parseFromProto(filePath);
             default -> throw new RuntimeException("Invalid file extension!");
-        };
+       };
     }
 
     public static School parseFromXmlGZip(String filePath) {
