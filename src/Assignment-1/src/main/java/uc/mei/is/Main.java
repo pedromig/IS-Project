@@ -2,13 +2,12 @@ package uc.mei.is;
 
 import uc.mei.is.model.School;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.concurrent.Callable;
 
 public class Main {
     public static void main(String[] args) {
@@ -19,48 +18,70 @@ public class Main {
     }
 
     private static void test(String filePath, int runs, Dataset... dataset) {
-
         try (PrintWriter out = new PrintWriter(filePath)) {
-            out.write("dataset,type,function,run,time\n");
+            // Header
+            out.write("dataset,type,function,run,time,size\n");
+
+            // Tmp files
+            Path bin = Paths.get("test.bin");
+            Path xml = Paths.get("test.xml");
+            Path xmlGz = Paths.get("test.xml.gz");
+
+            // Generate Data
             for (Dataset d : List.of(dataset)) {
                 School school = d.school;
                 System.err.println("=> Running dataset " + d.name + ":");
+
+                // Runs
                 for (int run = 1; run <= runs; ++run) {
                     System.err.print(" -> Run " + run + " ");
 
-                    // Marshall ProtoBuf
+                    // ProtoBuf
+                    long writeBin = timeit(() -> school.writeToProto(bin.toString()));
                     out.write(csv(d.name, "bin", "write", String.valueOf(run),
-                        String.valueOf(timeit(() -> school.writeToProto("a.bin")))
+                        String.valueOf(writeBin),
+                        String.valueOf(toKiB(Files.size(bin)))
                     ));
 
-                    // UnMarshall ProtoBuf
+                    long readBin = timeit(() -> School.parseFromProto(bin.toString()));
                     out.write(csv(d.name, "bin", "read", String.valueOf(run),
-                        String.valueOf(timeit(() -> School.parseFromProto("a.bin")))
+                        String.valueOf(readBin),
+                        String.valueOf(toKiB(Files.size(bin)))
                     ));
 
-                    // Marshall XML
+                    // XML
+                    long writeXml = timeit(() -> school.writeToXml(xml.toString()));
                     out.write(csv(d.name, "xml", "write", String.valueOf(run),
-                        String.valueOf(timeit(() -> school.writeToXml("b.xml")))
+                        String.valueOf(writeXml),
+                        String.valueOf(toKiB(Files.size(xml)))
                     ));
 
-                    // UnMarshall XML
+                    long readXml = timeit(() -> School.parseFromXml(xml.toString()));
                     out.write(csv(d.name, "xml", "read", String.valueOf(run),
-                        String.valueOf(timeit(() -> School.parseFromXml("b.xml")))
+                        String.valueOf(readXml),
+                        String.valueOf(toKiB(Files.size(xml)))
                     ));
 
-                    // Marshall XML + GZIP
+                    // XML + GZIP
+                    long readXmlGz = timeit(() -> school.writeToXmlGzip(xmlGz.toString()));
                     out.write(csv(d.name, "xml.gz", "write", String.valueOf(run),
-                        String.valueOf(timeit(() -> school.writeToXmlGzip("c.xml.gz")))
+                        String.valueOf(readXmlGz),
+                        String.valueOf(toKiB(Files.size(xmlGz)))
                     ));
 
-                    // UnMarshall XML + GZIP
-                    out.write(csv(d.name, "xml.gz", "read", String.valueOf(run), String.valueOf(
-                        timeit(() -> School.parseFromXmlGZip("c.xml.gz")))
+                    long writeXmlGz = timeit(() -> School.parseFromXmlGZip(xmlGz.toString()));
+                    out.write(csv(d.name, "xml.gz", "read", String.valueOf(run),
+                        String.valueOf(writeXmlGz),
+                        String.valueOf(toKiB(Files.size(xmlGz)))
                     ));
-
                     System.err.println("DONE!");
                 }
             }
+
+            // Cleanup...
+            Files.deleteIfExists(bin);
+            Files.deleteIfExists(xml);
+            Files.deleteIfExists(xmlGz);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -73,6 +94,10 @@ public class Main {
         }
         sb.setCharAt(sb.length() - 1, '\n');
         return sb.toString();
+    }
+
+    private static long toKiB(long size) {
+        return size / 1024;
     }
 
     private static long timeit(Runnable callback) {

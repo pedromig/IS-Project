@@ -274,7 +274,7 @@ public class School implements Serializable {
 
         School school = new School(students, teachers);
         for (Teacher teacher : teachers) {
-            int n = rng.nextInt(1, maxSupervisorStudents + 1);
+            int n = rng.nextInt(0, maxSupervisorStudents + 1);
             for (int i = 0; i < n; ++i) {
                 Student student = students.get(rng.nextInt(students.size()));
                 school.setSupervisor(teacher, student);
