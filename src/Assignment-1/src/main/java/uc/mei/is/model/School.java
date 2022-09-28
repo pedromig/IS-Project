@@ -12,10 +12,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -35,7 +32,7 @@ public class School implements Serializable {
     }
 
     public School(ArrayList<Student> students, ArrayList<Teacher> teachers) {
-        this.students = students; 
+        this.students = students;
         this.teachers = teachers;
     }
 
@@ -110,8 +107,11 @@ public class School implements Serializable {
 
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-            jaxbMarshaller.marshal(this, new File(filePath));
-        } catch (JAXBException e) {
+            try (FileOutputStream f = new FileOutputStream(filePath)) {
+                jaxbMarshaller.marshal(this, f);
+            }
+
+        } catch (IOException | JAXBException e) {
             e.printStackTrace();
         }
     }
@@ -135,7 +135,7 @@ public class School implements Serializable {
             case "xml.gz" -> School.parseFromXmlGZip(filePath);
             case "bin" -> School.parseFromProto(filePath);
             default -> throw new RuntimeException("Invalid file extension!");
-       };
+        };
     }
 
     public static School parseFromXmlGZip(String filePath) {
@@ -167,8 +167,11 @@ public class School implements Serializable {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(School.class);
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            school = (School) jaxbUnmarshaller.unmarshal(new File(filePath));
-        } catch (JAXBException e) {
+            try (FileInputStream f = new FileInputStream(filePath)) {
+                school = (School) jaxbUnmarshaller.unmarshal(f);
+            }
+
+        } catch (IOException | JAXBException e) {
             e.printStackTrace();
         }
         return school;
@@ -227,6 +230,94 @@ public class School implements Serializable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static School from(int nTeachers, int nStudents, int maxSupervisorStudents,
+                              String addressesPath, String namesPath, long seed) {
+
+        Random rng = new Random(seed);
+
+        ArrayList<String> addresses = loadData(addressesPath);
+        ArrayList<String> names = loadData(namesPath);
+
+        ArrayList<Integer> teacherIds = randomIds(nTeachers, rng);
+        ArrayList<Integer> studentIds = randomIds(nStudents, rng);
+
+        ArrayList<Teacher> teachers = new ArrayList<>();
+        ArrayList<Student> students = new ArrayList<>();
+
+        for (int i = 0; i < nTeachers; ++i) {
+            teachers.add(
+                new Teacher(
+                    teacherIds.remove(0),
+                    names.get(rng.nextInt(names.size())),
+                    randomCalendar(rng),
+                    randomPhoneNumber(rng),
+                    addresses.get(rng.nextInt(addresses.size()))
+                )
+            );
+        }
+
+        for (int i = 0; i < nStudents; ++i) {
+            students.add(
+                new Student(
+                    studentIds.remove(0),
+                    names.get(rng.nextInt(names.size())),
+                    randomPhoneNumber(rng),
+                    rng.nextBoolean() ? "Male" : "Female",
+                    randomCalendar(rng),
+                    randomCalendar(rng),
+                    addresses.get(rng.nextInt(addresses.size()))
+                )
+            );
+        }
+
+        School school = new School(students, teachers);
+        for (Teacher teacher : teachers) {
+            int n = rng.nextInt(1, maxSupervisorStudents + 1);
+            for (int i = 0; i < n; ++i) {
+                Student student = students.get(rng.nextInt(students.size()));
+                school.setSupervisor(teacher, student);
+            }
+        }
+        return school;
+    }
+
+    private static ArrayList<String> loadData(String filePath) {
+        ArrayList<String> lines = new ArrayList<>();
+        try (Scanner s = new Scanner(new File(filePath))) {
+            while (s.hasNextLine()) {
+                lines.add(s.nextLine());
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return lines;
+    }
+
+    private static ArrayList<Integer> randomIds(int size, Random rng) {
+        Set<Integer> idsOut = new HashSet<>();
+        while (idsOut.size() != size) {
+            idsOut.add(Math.abs(rng.nextInt()));
+        }
+        return new ArrayList<>(idsOut);
+    }
+
+    private static Calendar randomCalendar(Random rng) {
+        Calendar gc = Calendar.getInstance();
+
+        int max = gc.getActualMaximum(Calendar.DAY_OF_YEAR);
+        gc.set(Calendar.YEAR, rng.nextInt(1900, 2010));
+        gc.set(Calendar.DAY_OF_YEAR, rng.nextInt(1, max));
+        return gc;
+    }
+
+    private static Integer randomPhoneNumber(Random random) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 9; i++) {
+            sb.append((char) ('0' + random.nextInt(10)));
+        }
+        return Integer.parseInt(sb.toString());
     }
 
     @Override
