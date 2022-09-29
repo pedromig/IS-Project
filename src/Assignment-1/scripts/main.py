@@ -30,14 +30,14 @@ def average(data):
     plot = sns.barplot(data=df[df.function == "read"],
                        x="type", y="time", hue="dataset")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
-             title="Serialization Speed")
+             title="Deserialization Speed")
     plt.savefig("../../../docs/Assignment-1/data/read-speed.pdf")
 
     plt.figure()
     plot = sns.barplot(data=df[df.function == "write"],
                        x="type", y="time", hue="dataset")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
-             title="Deserialization Speed")
+             title="Serialization Speed")
     plt.savefig("../../../docs/Assignment-1/data/write-speed.pdf")
 
     # Serialization File Size
@@ -70,7 +70,7 @@ def spread(data):
                           hue="dataset", showfliers=False,
                           scale="count", inner="quartile")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
-             title="Serialization Speed")
+             title="Deserialization Speed")
     plt.savefig("../../../docs/Assignment-1/data/read-speed-spread.pdf")
 
     # Deserialization Speed Spread
@@ -79,7 +79,7 @@ def spread(data):
                           hue="dataset", showfliers=False,
                           scale="count", inner="quartile")
     plot.set(xlabel="File Type", ylabel="Size (KiB)",
-             title="Deserialization Speed")
+             title="Serialization Speed")
     plt.savefig("../../../docs/Assignment-1/data/write-speed-spread.pdf")
 
     # Serialization File Size Spread
