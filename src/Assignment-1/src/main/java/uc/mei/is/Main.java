@@ -11,10 +11,10 @@ import java.io.PrintWriter;
 
 public class Main {
     public static void main(String[] args) {
-        Dataset a = new Dataset("A", 800, 200);
-        Dataset b = new Dataset("B", 200, 800);
-        Dataset c = new Dataset("C", 500, 500);
-        test("data.csv", 100, a, b, c);
+        Dataset a = new Dataset("A", 800, 200, 2, 42);
+        Dataset b = new Dataset("B", 200, 800, 2, 42);
+        Dataset c = new Dataset("C", 500, 500, 2, 42);
+        test("data.csv", 300, a, b, c);
     }
 
     private static void test(String filePath, int runs, Dataset... dataset) {
@@ -122,7 +122,12 @@ public class Main {
 
         protected int maxSupervisorStudents = 2;
 
-        public Dataset(String name, int teacherCount, int studentsCount) {
+        public Dataset(String name, int teacherCount, int studentsCount, int maxSupervisorStudents, int seed) {
+            this.name = name;
+            this.teacherCount = teacherCount;
+            this.studentCount = studentsCount;
+            this.seed = seed;
+            this.maxSupervisorStudents = maxSupervisorStudents;
             this.school = School.from(
                 teacherCount,
                 studentsCount,
@@ -131,9 +136,6 @@ public class Main {
                 Paths.get("src", "main", "resources", "names.csv").toString(),
                 seed
             );
-            this.name = name;
-            this.teacherCount = teacherCount;
-            this.studentCount = studentsCount;
         }
     }
 }
