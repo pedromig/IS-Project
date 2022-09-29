@@ -31,14 +31,14 @@ def average(data):
                        x="type", y="time", hue="dataset")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
              title="Serialization Speed")
-    plt.savefig("read-speed.pdf")
+    plt.savefig("../../../docs/Assignment-1/data/read-speed.pdf")
 
     plt.figure()
     plot = sns.barplot(data=df[df.function == "write"],
                        x="type", y="time", hue="dataset")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
              title="Deserialization Speed")
-    plt.savefig("write-speed.pdf")
+    plt.savefig("../../../docs/Assignment-1/data/write-speed.pdf")
 
     # Serialization File Size
     plt.figure()
@@ -46,40 +46,41 @@ def average(data):
                        x="type", y="size", hue="dataset")
     plot.set(xlabel="File Type", ylabel="Size (KiB)",
              title="Serialization File Size")
-    plt.savefig("write-size.pdf")
+    plt.savefig("../../../docs/Assignment-1/data/write-size.pdf")
 
 
 def spread(data):
 
-    # Serialization Speed Spread
-    plt.figure()
+    # Setup
     read = data[data.function == "read"]
-    read = data[data.groupby(["dataset", "type", "function"]).time.transform(
+    read = read[read.groupby(["dataset", "type", "function"]).time.transform(
         lambda x: (x < x.quantile(0.95)) & (x > (x.quantile(0.05)))).eq(1)
     ].reset_index()
     read.sort_values(by="type", inplace=True)
 
+    write = data[data.function == "write"]
+    write = write[write.groupby(["dataset", "type", "function"]).time.transform(
+        lambda x: (x < x.quantile(0.95)) & (x > (x.quantile(0.05)))).eq(1)
+    ].reset_index()
+    write.sort_values(by="type", inplace=True)
+
+    # Serialization Speed Spread
+    plt.figure()
     plot = sns.violinplot(data=read, x="type", y="time",
                           hue="dataset", showfliers=False,
                           scale="count", inner="quartile")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
              title="Serialization Speed")
-    plt.savefig("read-speed-spread.pdf")
+    plt.savefig("../../../docs/Assignment-1/data/read-speed-spread.pdf")
 
     # Deserialization Speed Spread
     plt.figure()
-    write = data[data.function == "write"]
-    write = data[data.groupby(["dataset", "type", "function"]).time.transform(
-        lambda x: (x < x.quantile(0.95)) & (x > (x.quantile(0.05)))).eq(1)
-    ].reset_index()
-    write.sort_values(by="type", inplace=True)
-
     plot = sns.violinplot(data=write, x="type", y="time",
                           hue="dataset", showfliers=False,
                           scale="count", inner="quartile")
     plot.set(xlabel="File Type", ylabel="Size (KiB)",
-             title="Serialization File Size")
-    plt.savefig("write-speed-spread.pdf")
+             title="Deserialization Speed")
+    plt.savefig("../../../docs/Assignment-1/data/write-speed-spread.pdf")
 
     # Serialization File Size Spread
     plt.figure()
@@ -88,7 +89,7 @@ def spread(data):
                           scale="count", inner="quartile")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
              title="Serialization File Size")
-    plt.savefig("write-size-spread.pdf")
+    plt.savefig("../../../docs/Assignment-1/data/write-size-spread.pdf")
 
 
 if __name__ == "__main__":

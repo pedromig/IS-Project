@@ -14,7 +14,7 @@ public class Main {
         Dataset a = new Dataset("A", 800, 200, 2, 42);
         Dataset b = new Dataset("B", 200, 800, 2, 42);
         Dataset c = new Dataset("C", 500, 500, 2, 42);
-        test("data.csv", 300, a, b, c);
+        test("data.csv", 50, a, b, c);
     }
 
     private static void test(String filePath, int runs, Dataset... dataset) {
