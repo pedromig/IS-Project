@@ -74,24 +74,24 @@ def spread(data):
     ].reset_index()
     write.sort_values(by="type", inplace=True)
 
-    plot = sns.violinplot(data=write, x="type", y="size",
+    plot = sns.violinplot(data=write, x="type", y="time",
                           hue="dataset", showfliers=False,
                           scale="count", inner="quartile")
     plot.set(xlabel="File Type", ylabel="Size (KiB)",
              title="Serialization File Size")
-    plt.savefig("write-spread.pdf")
+    plt.savefig("write-speed-spread.pdf")
 
-    # Deserialization Size Spread
+    # Serialization File Size Spread
     plt.figure()
-    plot = sns.violinplot(data=write, x="type", y="time",
+    plot = sns.violinplot(data=write, x="type", y="size",
                           hue="dataset", showfliers=False,
                           scale="count", inner="quartile")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
-             title="Deserialization Speed")
-    plt.savefig("write-speed-spread.pdf")
+             title="Serialization File Size")
+    plt.savefig("write-size-spread.pdf")
 
 
 if __name__ == "__main__":
-    data = pd.read_csv("../data.csv")
+    data = pd.read_csv("../../../docs/Assignment-1/data/data.csv")
     average(data)
     spread(data)
