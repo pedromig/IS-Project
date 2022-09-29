@@ -11,10 +11,11 @@ import java.io.PrintWriter;
 
 public class Main {
     public static void main(String[] args) {
-        Dataset a = new Dataset("A", 800, 200, 2, 42);
-        Dataset b = new Dataset("B", 200, 800, 2, 42);
-        Dataset c = new Dataset("C", 500, 500, 2, 42);
-        test("data.csv", 50, a, b, c);
+        Dataset a = new Dataset("A", 10, 50, 2, 42);
+        Dataset b = new Dataset("B", 800, 200, 2, 42);
+        Dataset c = new Dataset("C", 200, 800, 2, 42);
+        Dataset d = new Dataset("D", 500, 500, 2, 42);
+        test("data.csv", 50, a, b, c, d);
     }
 
     private static void test(String filePath, int runs, Dataset... dataset) {

@@ -31,6 +31,9 @@ def average(data):
                        x="type", y="time", hue="dataset")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
              title="Deserialization Speed")
+    for i in plot.containers:
+        plot.bar_label(i,)
+
     plt.savefig("../../../docs/Assignment-1/data/read-speed.pdf")
 
     plt.figure()
@@ -38,6 +41,8 @@ def average(data):
                        x="type", y="time", hue="dataset")
     plot.set(xlabel="File Type", ylabel="Time (ms)",
              title="Serialization Speed")
+    for i in plot.containers:
+        plot.bar_label(i,)
     plt.savefig("../../../docs/Assignment-1/data/write-speed.pdf")
 
     # Serialization File Size
@@ -46,6 +51,8 @@ def average(data):
                        x="type", y="size", hue="dataset")
     plot.set(xlabel="File Type", ylabel="Size (KiB)",
              title="Serialization File Size")
+    for i in plot.containers:
+        plot.bar_label(i,)
     plt.savefig("../../../docs/Assignment-1/data/write-size.pdf")
 
 
@@ -59,8 +66,9 @@ def spread(data):
     read.sort_values(by="type", inplace=True)
 
     write = data[data.function == "write"]
-    write = write[write.groupby(["dataset", "type", "function"]).time.transform(
-        lambda x: (x < x.quantile(0.95)) & (x > (x.quantile(0.05)))).eq(1)
+    write = write[
+        write.groupby(["dataset", "type", "function"]).time.transform(
+            lambda x: (x < x.quantile(0.95)) & (x > (x.quantile(0.05)))).eq(1)
     ].reset_index()
     write.sort_values(by="type", inplace=True)
 
