@@ -86,7 +86,7 @@ def spread(data):
     plot = sns.violinplot(data=write, x="type", y="time",
                           hue="dataset", showfliers=False,
                           scale="count", inner="quartile")
-    plot.set(xlabel="File Type", ylabel="Size (KiB)",
+    plot.set(xlabel="File Type", ylabel="Time (ms)",
              title="Serialization Speed")
     plt.savefig("../../../docs/Assignment-1/data/write-speed-spread.pdf")
 
@@ -95,7 +95,7 @@ def spread(data):
     plot = sns.violinplot(data=write, x="type", y="size",
                           hue="dataset", showfliers=False,
                           scale="count", inner="quartile")
-    plot.set(xlabel="File Type", ylabel="Time (ms)",
+    plot.set(xlabel="File Type", ylabel="Size (KiB)",
              title="Serialization File Size")
     plt.savefig("../../../docs/Assignment-1/data/write-size-spread.pdf")
 
