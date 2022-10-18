@@ -1,6 +1,6 @@
 package uc.mei.is;
 
-import io.r2dbc.spi.ConnectionFactory;
+/*import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,3 +28,17 @@ public class Main {
     return initializer;
   }
 }
+*/
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Main {
+
+	public static void main(String[] args) {
+		SpringApplication.run(Main.class, args);
+	}
+
+}
+
