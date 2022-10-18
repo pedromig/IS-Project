@@ -1,4 +1,4 @@
-package mei.uc.is;
+package uc.mei.is;
 
 import java.util.ArrayList;
 import java.util.Comparator;
