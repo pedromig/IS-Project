@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 @SpringBootApplication
 @RestController
-public class ReacttiveServiceApplication {
+public class ReactiveService {
 
     @GetMapping ("/teachers/{id}")
     Mono<Teacher> getAllTeachers(@PathVariable int id) {
@@ -34,7 +34,7 @@ public class ReacttiveServiceApplication {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(ReacttiveServiceApplication.class, args);
+        SpringApplication.run(ReactiveService.class, args);
     }
     
 }
