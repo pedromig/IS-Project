@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
@@ -12,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import uc.mei.is.entity.Teacher;
 
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {R2dbcAutoConfiguration.class})
 public class ReactiveClient {
     
     @Bean
