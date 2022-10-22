@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS teacher (
 
 CREATE TABLE IF NOT EXISTS student (
     id bigint PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
     birth_date DATE NOT NULL,
     credits int NOT NULL DEFAULT 0,
     average float NOT NULL DEFAULT 0.0

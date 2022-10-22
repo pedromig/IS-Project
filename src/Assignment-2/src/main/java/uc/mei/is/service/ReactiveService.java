@@ -7,7 +7,15 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.r2dbc.config.EnableR2dbcAuditing;
 import uc.mei.is.entity.Teacher;
+
+import io.r2dbc.spi.ConnectionFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
+import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,7 +24,8 @@ import reactor.util.function.Tuple2;
 import java.time.Duration;
 import java.util.stream.Stream;
 
-@SpringBootApplication(exclude = {R2dbcAutoConfiguration.class})
+@SpringBootApplication
+@EnableR2dbcAuditing
 @RestController
 public class ReactiveService {
 
@@ -41,6 +50,17 @@ public class ReactiveService {
 
     public static void main(String[] args) {
         SpringApplication.run(ReactiveService.class, args);
+    }
+
+    // not working
+    @Bean
+    ConnectionFactoryInitializer initializer(@Qualifier("connectionFactory") ConnectionFactory connectionFactory) {
+        ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
+        initializer.setConnectionFactory(connectionFactory);
+        ResourceDatabasePopulator resource =
+            new ResourceDatabasePopulator(new ClassPathResource("schema.sql"));
+        initializer.setDatabasePopulator(resource);
+        return initializer;
     }
     
 }

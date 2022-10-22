@@ -4,16 +4,19 @@ import java.util.Collections;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
+//import org.springframework.test.context.junit4.SpringRunner;
+//import org.junit.runner.RunWith;
+
 import uc.mei.is.entity.Teacher;
 
 
-@SpringBootApplication(exclude = {R2dbcAutoConfiguration.class})
+//@RunWith(SpringRunner.class)
+@SpringBootApplication
 public class ReactiveClient {
     
     @Bean
@@ -29,8 +32,8 @@ public class ReactiveClient {
                 .get()
                 .uri("/teachers")
                 .accept(MediaType.TEXT_EVENT_STREAM)
-                .exchange()
-                .flatMapMany(clientResponse -> clientResponse.bodyToFlux(Teacher.class))
+                .retrieve()
+                .bodyToFlux(Teacher.class)
                 .subscribe(System.out::println);
         };
     }
