@@ -1,4 +1,6 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-19"
+    "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-19",
+    "java.maven.updateSnapshots": true,
+    "java.maven.downloadSources": true
 }
