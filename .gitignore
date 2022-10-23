@@ -104,3 +104,5 @@ modules.xml
 .idea/sonarlint
 src/Assignment-1/.vscode/settings.json
 src/Assignment-2/db/data
+src/Assignment-2/.idea
+src/Assignment-2/.vscode

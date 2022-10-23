@@ -1,6 +1,6 @@
 package uc.mei.is.client;
 
-/*import java.util.Collections;
+import java.util.Collections;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,14 +12,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 //import org.springframework.test.context.junit4.SpringRunner;
 //import org.junit.runner.RunWith;
 
-import uc.mei.is.server.entity.Teacher;*/
+import uc.mei.is.server.entity.Teacher;
 
 
 //@RunWith(SpringRunner.class)
-//@SpringBootApplication
+@SpringBootApplication
 public class ReactiveClient {
     
-    /*@Bean
+    @Bean
     WebClient client () {
         return WebClient.create("http://localhost:8080");
     }
@@ -30,7 +30,7 @@ public class ReactiveClient {
 
             client
                 .get()
-                .uri("/teachers")
+                .uri("/teacher")
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .retrieve()
                 .bodyToFlux(Teacher.class)
@@ -43,6 +43,6 @@ public class ReactiveClient {
         new SpringApplicationBuilder(ReactiveClient.class)
             .properties(Collections.singletonMap("server.port", "8081"))
             .run(args);
-    }*/
+    }
 
 }
