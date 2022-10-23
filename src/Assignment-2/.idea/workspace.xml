@@ -5,16 +5,35 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c12beb68-dd6d-4051-b266-0f37223aa34c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/Application.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/service/ReactiveService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.vscode/settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/.vscode/settings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/settings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/.env" beforeDir="false" afterPath="$PROJECT_DIR$/db/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/service/ReactiveService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/service/ReactiveService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/entity/Teacher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/entity/Teacher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/repository/TeacherRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/repository/TeacherRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/service/ReactiveService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/schema.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
@@ -30,48 +49,37 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;ToolWindowRun.ShowToolbar&quot;: &quot;false&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/Rodrigo/Desktop/projects/IS-Project/src/Assignment-2&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.repository.indices&quot;,
+    &quot;spring.configuration.checksum&quot;: &quot;d7fb3f6d96698bbc0655e413cc3678ec&quot;
   }
 }</component>
-  <component name="RunManager" selected="Application.ReactiveService">
-    <configuration name="Application" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="uc.mei.is.Application" />
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="uc.mei.is.server.config" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="Assignment-2" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="uc.mei.is.server.Application" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="uc.mei.is.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ReactiveClient" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="uc.mei.is.client.ReactiveClient" />
-      <module name="Assignment-2" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="uc.mei.is.client.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ReactiveService" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="uc.mei.is.service.ReactiveService" />
-      <module name="Assignment-2" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="uc.mei.is.service.*" />
+          <option name="PATTERN" value="uc.mei.is.server.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -81,9 +89,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.ReactiveService" />
-        <item itemvalue="Application.ReactiveClient" />
-        <item itemvalue="Application.Application" />
+        <item itemvalue="Spring Boot.Application" />
       </list>
     </recent_temporary>
   </component>
@@ -96,6 +102,9 @@
       <option name="presentableId" value="Default" />
       <updated>1663604631917</updated>
       <workItem from="1663604633058" duration="2000" />
+      <workItem from="1666537367048" duration="3274000" />
+      <workItem from="1666543993061" duration="68000" />
+      <workItem from="1666544516350" duration="1837000" />
     </task>
     <servers />
   </component>

@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 //import org.springframework.test.context.junit4.SpringRunner;
 //import org.junit.runner.RunWith;
 
-import uc.mei.is.entity.Teacher;*/
+import uc.mei.is.server.entity.Teacher;*/
 
 
 //@RunWith(SpringRunner.class)
