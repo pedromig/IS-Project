@@ -30,7 +30,7 @@ public class ReactiveClient {
 
             client
                 .get()
-                .uri("/teacher")
+                .uri("/teacher/all")
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .retrieve()
                 .bodyToFlux(Teacher.class)
@@ -39,10 +39,10 @@ public class ReactiveClient {
     }
 
 
-    public static void main(String [] args) {
+    /*public static void main(String [] args) {
         new SpringApplicationBuilder(ReactiveClient.class)
             .properties(Collections.singletonMap("server.port", "8081"))
             .run(args);
-    }
+    }*/
 
 }

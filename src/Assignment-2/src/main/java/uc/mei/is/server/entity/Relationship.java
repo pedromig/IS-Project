@@ -1,6 +1,7 @@
 package uc.mei.is.server.entity;
 
 import lombok.Builder;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
@@ -8,14 +9,14 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Teacher {
+public class Relationship {
     @Id
     private final int id;
-    @Column("name")
-    private final String name;
-
-    public Teacher(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
+    @Column("student_id")
+    private final int student_id;
+    @Column("teacher_id")
+    private final int teacher_id;
+    
 }
+
+
