@@ -6,13 +6,17 @@ import org.springframework.data.relational.core.mapping.Column;
 
 import lombok.Data;
 
+
 @Data
 @Builder
 public class Teacher {
     @Id
-    private final int id;
+    private int id;
     @Column("name")
-    private final String name;
+    private String name;
+
+    
+    public Teacher(){}
 
     public Teacher(int id, String name) {
         this.id = id;

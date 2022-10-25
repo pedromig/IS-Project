@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS teacher (
 CREATE TABLE IF NOT EXISTS student (
     id BIGINT PRIMARY KEY,
     name TEXT NOT NULL,
-    birth_date DATE NOT NULL,
+    birth_date TIMESTAMP NOT NULL,
     credits INTEGER NOT NULL DEFAULT 0,
     average FLOAT NOT NULL DEFAULT 0.0
 );
