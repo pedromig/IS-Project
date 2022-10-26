@@ -11,11 +11,25 @@ import lombok.Data;
 @Builder
 public class Relationship {
     @Id
-    private final int id;
+    private int id;
     @Column("student_id")
-    private final int student_id;
+    private int student_id;
     @Column("teacher_id")
-    private final int teacher_id;
+    private int teacher_id;
+
+
+    public Relationship() {}
+
+    public Relationship(int student_id, int teacher_id) {
+        this.student_id = student_id;
+        this.teacher_id = teacher_id;
+    }
+
+    public Relationship(int id, int student_id, int teacher_id) {
+        this.id = id;
+        this.student_id = student_id;
+        this.teacher_id = teacher_id;
+    }
     
 }
 

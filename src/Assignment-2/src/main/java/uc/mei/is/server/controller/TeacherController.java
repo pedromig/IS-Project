@@ -28,15 +28,15 @@ public class TeacherController {
     private final TeacherRepository teacherRepository;
 
     // this can also be used to update teachers
-    @PostMapping (value = "/add/{id}/{name}")
-    public Mono<Teacher> addTeacher(@PathVariable("id") int id, @PathVariable("name") String name) {
-        // TODO find if id exists, error
+    @PostMapping (value = "/add/{name}")
+    public Mono<Teacher> addTeacher(@PathVariable("name") String name) {
         Teacher t = Teacher.builder()
-                                .id(id)
                                 .name(name)
                                 .build();
-        teacherRepository.save2(t.getId(), t.getName()).subscribe();
-        return Mono.just(t);                      
+        teacherRepository.save2(t.getName()).subscribe();
+
+        return Mono.just(t);
+             
     }
 
     @PutMapping(value = "/upd/{id}/{name}")
@@ -45,7 +45,7 @@ public class TeacherController {
                             .id(id)
                             .name(name)
                             .build();
-        teacherRepository.save2(t.getId(), t.getName()).subscribe();
+        teacherRepository.update(t.getId(), t.getName()).subscribe();
         return Mono.just(t);   
     }
 

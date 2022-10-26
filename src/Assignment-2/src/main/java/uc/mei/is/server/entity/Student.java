@@ -2,7 +2,7 @@ package uc.mei.is.server.entity;
 
 import lombok.Builder;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -17,7 +17,7 @@ public class Student {
     @Column("name")
     private String name;
     @Column("birth_date")
-    private Date birth_date;
+    private LocalDateTime birth_date;
     @Column("credits")
     private int credits;
     @Column("average")
@@ -25,22 +25,13 @@ public class Student {
 
     public Student() {}
 
-    public Student(int id, String name, Date birth_date, int credits, Float average) {
+    public Student(int id, String name, LocalDateTime birth_date, int credits, Float average) {
         this.id = id;
         this.name = name;
         this.birth_date = birth_date;
         this.credits = credits;
         this.average = average;
     }
-
-    public Date getBirth_date() {
-        return this.birth_date;
-    }
-
-    public void setBirth_date(Date birth_date) {
-        this.birth_date = birth_date;
-    }
-    
 }
 
 
