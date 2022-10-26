@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.lang.Math;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import uc.mei.is.server.entity.Relationship;
 import uc.mei.is.server.entity.Student;
@@ -46,10 +48,10 @@ public class ReactiveClient {
             System.out.println("Teachers added");
 
             client.post().uri("/student/add/João/01-01-2000/30/12").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/student/add/Rodrigo/01-01-2000/150/17").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/student/add/Miguel/01-01-2000/120/19.5").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/student/add/Sofia/01-01-2000/180/17.2").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/student/add/Bruno/01-01-2000/174/12.3").retrieve().bodyToMono(Teacher.class).subscribe();
+            client.post().uri("/student/add/Rodrigo/01-06-2001/150/17").retrieve().bodyToMono(Teacher.class).subscribe();
+            client.post().uri("/student/add/Miguel/01-03-2000/120/19.5").retrieve().bodyToMono(Teacher.class).subscribe();
+            client.post().uri("/student/add/Sofia/01-12-2004/180/17.2").retrieve().bodyToMono(Teacher.class).subscribe();
+            client.post().uri("/student/add/Bruno/19-01-2002/174/12.3").retrieve().bodyToMono(Teacher.class).subscribe();
             System.out.println("Students added");
             
             // wait for all requests to complete
@@ -74,7 +76,7 @@ public class ReactiveClient {
                     .map(s -> s.getName() + " ==> " + 
                             s.getBirth_date().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
                     .reduce((total, cur) -> total + "\n" + cur)
-                    .subscribe(s -> writeToFile("outputs/ex1.txt", s));
+                    .subscribe(s -> writeToFile("outputs/ex1.txt", s, false));
                     
             System.out.println("Ex1 done: " + durationFormat(Duration.between(start, Instant.now()))); 
         };
@@ -89,7 +91,7 @@ public class ReactiveClient {
                     .retrieve()
                     .bodyToFlux(Student.class)
                     .count()
-                    .subscribe(s -> writeToFile("outputs/ex2.txt", String.valueOf(s)));
+                    .subscribe(s -> writeToFile("outputs/ex2.txt", String.valueOf(s), false));
             System.out.println("Ex2 done: " + durationFormat(Duration.between(start, Instant.now()))); 
         };
     }
@@ -104,7 +106,7 @@ public class ReactiveClient {
                     .bodyToFlux(Student.class)
                     .filter(s -> s.getCredits() < 180)
                     .count()
-                    .subscribe(s -> writeToFile("outputs/ex3.txt", String.valueOf(s)));
+                    .subscribe(s -> writeToFile("outputs/ex3.txt", String.valueOf(s), false));
             System.out.println("Ex3 done: " + durationFormat(Duration.between(start, Instant.now()))); 
         };
     }
@@ -119,7 +121,7 @@ public class ReactiveClient {
                     .bodyToFlux(Student.class)
                     .map(s -> s.getCredits() / 6)
                     .reduce((counter, cur) -> counter + cur)
-                    .subscribe(s -> writeToFile("outputs/ex4.txt", String.valueOf(s)));
+                    .subscribe(s -> writeToFile("outputs/ex4.txt", String.valueOf(s), false));
             System.out.println("Ex4 done: " + durationFormat(Duration.between(start, Instant.now()))); 
         };
     }
@@ -137,28 +139,98 @@ public class ReactiveClient {
                     
                     .map(s -> s.getName() + " ==> " + s.getCredits())
                     .reduce((total, cur) -> total + "\n" + cur)
-                    .subscribe(s -> writeToFile("outputs/ex5.txt", String.valueOf(s)));
+                    .subscribe(s -> writeToFile("outputs/ex5.txt", String.valueOf(s), false));
             System.out.println("Ex5 done: " + durationFormat(Duration.between(start, Instant.now()))); 
         };
     }
 
-    /*@Bean
+    @Bean
     CommandLineRunner ex6 (WebClient client) {
+        return args -> {
+            Instant start = Instant.now();
+            Mono<Long> count = client.get()
+                            .uri("/student/all")
+                            .retrieve()
+                            .bodyToFlux(Student.class)
+                            .count();
+
+            Mono<Float> sum = client.get()
+                            .uri("/student/all")
+                            .retrieve()
+                            .bodyToFlux(Student.class)
+                            .map(s -> s.getAverage())
+                            .reduce((s, cur) -> s + cur);
+
+            Float sumF = sum.block();
+            Long countL = count.block();
+            Float mean = sumF / countL;
+            writeToFile("outputs/ex6.txt", "Mean: " + String.valueOf(mean) + "\n", false);
+
+            client.get()
+                    .uri("/student/all")
+                    .retrieve()
+                    .bodyToFlux(Student.class)
+                    .map(s -> Math.pow((double)s.getAverage() - mean, 2))
+                    .reduce((total, s) -> total + s)
+                    //.doOnNext(System.out::println)
+                    .subscribe(s -> writeToFile("outputs/ex6.txt", "Standard Deviation: " + String.valueOf(Math.sqrt(s/countL)), true));
+
+            System.out.println("Ex6 done: " + durationFormat(Duration.between(start, Instant.now()))); 
+        };
+    }
+
+    @Bean
+    CommandLineRunner ex7 (WebClient client) {
+        return args -> {
+            Instant start = Instant.now();
+            Mono<Long> count = client.get()
+                            .uri("/student/all")
+                            .retrieve()
+                            .bodyToFlux(Student.class)
+                            .filter(s -> s.getCredits() == 180)
+                            .count();
+
+            Mono<Float> sum = client.get()
+                            .uri("/student/all")
+                            .retrieve()
+                            .bodyToFlux(Student.class)
+                            .filter(s -> s.getCredits() == 180)
+                            .map(s -> s.getAverage())
+                            .reduce((s, cur) -> s + cur);
+
+            Float sumF = sum.block();
+            Long countL = count.block();
+            Float mean = sumF / countL;
+            writeToFile("outputs/ex7.txt", "Mean: " + String.valueOf(mean) + "\n", false);
+            
+
+            client.get()
+                    .uri("/student/all")
+                    .retrieve()
+                    .bodyToFlux(Student.class)
+                    .filter(s -> s.getCredits() == 180)
+                    .map(s -> Math.pow((double)s.getAverage() - mean, 2))
+                    .reduce((total, s) -> total + s)
+                    //.doOnNext(System.out::println)
+                    .subscribe(s -> writeToFile("outputs/ex7.txt", "Standard Deviation: " + String.valueOf(Math.sqrt(s/countL)), true));
+
+            System.out.println("Ex7 done: " + durationFormat(Duration.between(start, Instant.now()))); 
+        };
+    }
+
+    @Bean
+    CommandLineRunner ex8 (WebClient client) {
         return args -> {
             Instant start = Instant.now();
             client.get()
                     .uri("/student/all")
                     .retrieve()
                     .bodyToFlux(Student.class)
-                    //.filter(s -> s.getCredits() == 180)
-                    .concatMap(null)
-                    
-                    .map(s -> s.getName() + " ==> " + s.getCredits())
-                    .reduce((total, cur) -> total + "\n" + cur)
-                    .subscribe(s -> writeToFile("outputs/ex6.txt", String.valueOf(s)));
-            System.out.println("Ex6 done: " + durationFormat(Duration.between(start, Instant.now()))); 
+                    .sort((s1, s2) -> s2.getBirth_date().compareTo(s1.getBirth_date()))
+                    .subscribe(s -> writeToFile("outputs/ex8.txt", s.getName(), false));
+            System.out.println("Ex8 done: " + durationFormat(Duration.between(start, Instant.now()))); 
         };
-    }*/
+    }
 
     public static void main(String [] args) {
         new SpringApplicationBuilder(ReactiveClient.class)
@@ -167,11 +239,11 @@ public class ReactiveClient {
         
     }
 
-    public Boolean writeToFile(String filePath, String content) {
+    public Boolean writeToFile(String filePath, String content, Boolean append) {
         try {
             new File(filePath.substring(0, filePath.lastIndexOf("/"))).mkdirs();
 
-            FileWriter myWriter = new FileWriter(filePath);
+            FileWriter myWriter = new FileWriter(filePath, append);
             myWriter.write(content);
             myWriter.close();
             return true;
@@ -185,6 +257,10 @@ public class ReactiveClient {
                 .substring(2)
                 .replaceAll("(\\d[HMS])(?!$)", "$1 ")
                 .toLowerCase();
+    }
+
+    public static Float calculateAverage(Float sum, Long count) {
+        return sum/count;
     }
 
 }
