@@ -232,6 +232,89 @@ public class ReactiveClient {
         };
     }
 
+    @Bean
+    CommandLineRunner ex9 (WebClient client) {
+        return args -> {
+            Instant start = Instant.now();
+
+            Mono<Long> nStudentsM = client.get()
+                                            .uri("/student/all")
+                                            .retrieve()
+                                            .bodyToFlux(Teacher.class)
+                                            .count();
+
+            Long nStudents = nStudentsM.block();
+
+            Mono<Long> sumTeachers = client.get()
+                                            .uri("/student/all")
+                                            .retrieve()
+                                            .bodyToFlux(Teacher.class)
+                                            .map ((s) -> {
+                                                        return client.get()
+                                                            .uri("/relationship/findTeachers/" + s.getId())
+                                                            .retrieve()
+                                                            .bodyToFlux(Integer.class)
+                                                            .count();
+                                                        })
+                                            .count();
+            
+            Float sumTch = (float) sumTeachers.block();
+            Float meanTeacherStudent = calculateAverage(sumTch, nStudents);
+            writeToFile("outputs/ex9.txt", "Average number of teachers per Student: " + String.valueOf(meanTeacherStudent), false);
+
+            System.out.println("Ex9 done: " + durationFormat(Duration.between(start, Instant.now()))); 
+        };
+    }
+
+    @Bean
+    CommandLineRunner ex10 (WebClient client) {
+        return args -> {
+            Instant start = Instant.now();
+
+            writeToFile("outputs/ex10.txt", "", false);
+
+            Mono<Long> mono = client.get()
+                                    .uri("/teacher/all")
+                                    .retrieve()
+                                    .bodyToFlux(Teacher.class)
+                                    .map ((t) -> {
+                                                return client.get()
+                                                    .uri("/relationship/findStudents/" + t.getId())
+                                                    .retrieve()
+                                                    .bodyToFlux(Integer.class)
+                                                    .doOnNext((id) ->  {
+                                                        System.out.println("Teacher: " + t.getName());
+                                                        writeToFile("outputs/ex10.txt", "Teacher: " + t.getName() + "\n", true);
+                                                        client.get()
+                                                                .uri("/student/" + id)
+                                                                .retrieve()
+                                                                .bodyToFlux(Student.class)
+                                                                .doOnNext(s -> System.out.println("\t" + s.getName()))
+                                                                .doOnNext(s -> writeToFile("outputs/ex10.txt", "\t" + s.getName() + "\n", true))
+                                                                .subscribe();
+                                                    })
+                                                    .count()
+                                                    .doOnNext(n -> System.out.println("\tNStudents: " + String.valueOf(n)))
+                                                    .doOnNext(n -> writeToFile("outputs/ex10.txt", "\tNStudents: " + String.valueOf(n) + "\n", true))
+                                                    .subscribe();
+                                                })
+                                    .count();
+            
+            Float sumTch = (float) mono.block();
+
+            
+            /*Flux<Teacher> allTeachers = client.get()
+                                            .uri("/teacher/all")
+                                            .retrieve()
+                                            .bodyToFlux(Teacher.class);*/
+
+            
+            //System.out.println(sumTch);
+            System.out.println("Ex10 done: " + durationFormat(Duration.between(start, Instant.now()))); 
+        };
+    }
+
+
     public static void main(String [] args) {
         new SpringApplicationBuilder(ReactiveClient.class)
             .properties(Collections.singletonMap("server.port", "8081"))    
