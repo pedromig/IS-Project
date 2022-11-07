@@ -2,25 +2,28 @@ package uc.mei.is.server.entity;
 
 import lombok.Builder;
 import org.springframework.data.annotation.Id;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.relational.core.mapping.Column;
 
 import lombok.Data;
+
 
 @Data
 @Builder
 public class Teacher {
     @Id
-    @JsonProperty("id")
-    private final int id;
-    @JsonProperty("name")
-    private final String name;
+    private int id;
+    @Column("name")
+    private String name;
 
-    @JsonCreator
-    public Teacher(@JsonProperty("id") int id, @JsonProperty("name") String name) {
-        this.id = id;
+    
+    public Teacher(){}
+
+    public Teacher(String name) {
         this.name = name;
     }
 
+    public Teacher(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }
