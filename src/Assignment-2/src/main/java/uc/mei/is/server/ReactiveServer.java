@@ -7,25 +7,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.r2dbc.config.EnableR2dbcAuditing;
-import org.springframework.http.MediaType;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import uc.mei.is.server.entity.Teacher;
-
-import java.time.Duration;
-import java.util.stream.Stream;
 
 @SpringBootApplication
 @EnableR2dbcAuditing
-public class Application {
+public class ReactiveServer {
 
   public static void main(String[] args) {
-    SpringApplication.run(Application.class, args);
+    SpringApplication.run(ReactiveServer.class, args);
   }
 
   @Bean

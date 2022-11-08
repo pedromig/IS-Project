@@ -1,20 +1,20 @@
-CREATE TABLE IF NOT EXISTS teacher (
+CREATE TABLE IF NOT EXISTS Teacher (
     id BIGSERIAL PRIMARY KEY,
-    name TEXT NOT NULL
+    name VARCHAR(256) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS student (
+CREATE TABLE IF NOT EXISTS Student (
     id BIGSERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name VARCHAR(32) NOT NULL,
     birth_date TIMESTAMP NOT NULL,
     credits INTEGER NOT NULL DEFAULT 0,
-    average FLOAT NOT NULL DEFAULT 0.0
+    gpa FLOAT NOT NULL DEFAULT 0.0
 );
 
-CREATE TABLE IF NOT EXISTS relationship (
+CREATE TABLE IF NOT EXISTS Relationship (
     id BIGSERIAL PRIMARY KEY,
     student_id BIGINT,
 	teacher_id BIGINT,
-    FOREIGN KEY (student_id) REFERENCES student (id),
-    FOREIGN KEY (teacher_id) REFERENCES teacher (id)
+    FOREIGN KEY (student_id) REFERENCES Student (id),
+    FOREIGN KEY (teacher_id) REFERENCES Teacher (id)
 );

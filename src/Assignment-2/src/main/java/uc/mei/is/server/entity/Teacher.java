@@ -1,29 +1,18 @@
 package uc.mei.is.server.entity;
 
-import lombok.Builder;
+import lombok.*;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
-import lombok.Data;
-
-
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Teacher {
     @Id
     private int id;
-    @Column("name")
+
+    @Column
     private String name;
-
-    
-    public Teacher(){}
-
-    public Teacher(String name) {
-        this.name = name;
-    }
-
-    public Teacher(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
 }

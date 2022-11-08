@@ -1,533 +1,184 @@
 package uc.mei.is.client;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-import java.lang.Math;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
+import java.util.function.Function;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import uc.mei.is.server.entity.Relationship;
+import reactor.util.function.Tuples;
 import uc.mei.is.server.entity.Student;
-
-//import org.springframework.test.context.junit4.SpringRunner;
-//import org.junit.runner.RunWith;
-
 import uc.mei.is.server.entity.Teacher;
 
-
-//@RunWith(SpringRunner.class)
-@SpringBootApplication
 public class ReactiveClient {
-    
-    @Bean
-    WebClient client () {
-        return WebClient.create("http://localhost:8080");
+
+    public static void main(String[] args) throws InterruptedException {
+        WebClient client = WebClient.create("http://localhost:8080");
+
+        Flux<Student> students = client.get().uri("/student/list").retrieve().bodyToFlux(Student.class);
+        Flux<Teacher> teachers = client.get().uri("/teacher/list").retrieve().bodyToFlux(Teacher.class);
+
+        System.out.println("Elapsed Time: " + timeit(() -> run(client, students, teachers)));
     }
 
-    /*@Bean
-    CommandLineRunner fillDatabase (WebClient client) {
-        return args -> { 
-            client.post().uri("/teacher/add/Maria").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/teacher/add/Pedro").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/teacher/add/Marcia").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/teacher/add/António").retrieve().bodyToMono(Teacher.class).subscribe();
-            System.out.println("Teachers added");
-
-            client.post().uri("/student/add/João/01-01-2000/30/12").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/student/add/Rodrigo/01-06-2001/150/17").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/student/add/Miguel/01-03-2000/120/19.5").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/student/add/Sofia/01-12-2004/180/17.2").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/student/add/Bruno/19-01-2002/174/12.3").retrieve().bodyToMono(Teacher.class).subscribe();
-            System.out.println("Students added");
-            
-            // wait for all requests to complete
-            TimeUnit.SECONDS.sleep(1);
-
-            client.post().uri("/relationship/add/1/1").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/relationship/add/3/1").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/relationship/add/4/4").retrieve().bodyToMono(Teacher.class).subscribe();
-            client.post().uri("/relationship/add/5/3").retrieve().bodyToMono(Teacher.class).subscribe();
-            System.out.println("Relationships added\nAll data added");
-        };
-    }*/
-
-    @Bean
-    CommandLineRunner ex1 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-            client.get()
-                    .uri("/student/all")
-                    .retrieve()
-                    .bodyToFlux(Student.class)
-                    .map(s -> s.getName() + " ==> " + 
-                            s.getBirth_date().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-                    .reduce((total, cur) -> total + "\n" + cur)
-                    .subscribe(s -> writeToFile("outputs/ex1.txt", s, false));
-                    
-            System.out.println("Ex1 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-    @Bean
-    CommandLineRunner ex2 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-            client.get()
-                    .uri("/student/all")
-                    .retrieve()
-                    .bodyToFlux(Student.class)
-                    .count()
-                    .subscribe(s -> writeToFile("outputs/ex2.txt", String.valueOf(s), false));
-            System.out.println("Ex2 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-    @Bean
-    CommandLineRunner ex3 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-            client.get()
-                    .uri("/student/all")
-                    .retrieve()
-                    .bodyToFlux(Student.class)
-                    .filter(s -> s.getCredits() < 180)
-                    .count()
-                    .subscribe(s -> writeToFile("outputs/ex3.txt", String.valueOf(s), false));
-            System.out.println("Ex3 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-    @Bean
-    CommandLineRunner ex4 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-            client.get()
-                    .uri("/student/all")
-                    .retrieve()
-                    .bodyToFlux(Student.class)
-                    .map(s -> s.getCredits() / 6)
-                    .reduce((counter, cur) -> counter + cur)
-                    .subscribe(s -> writeToFile("outputs/ex4.txt", String.valueOf(s), false));
-            System.out.println("Ex4 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-    @Bean
-    CommandLineRunner ex5 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-            client.get()
-                    .uri("/student/all")
-                    .retrieve()
-                    .bodyToFlux(Student.class)
-                    .filter(s -> 120 <= s.getCredits() && s.getCredits() < 180)
-                    .sort((s1, s2) -> s2.getCredits() - s1.getCredits())
-                    
-                    .map(s -> s.getName() + " ==> " + s.getCredits())
-                    .reduce((total, cur) -> total + "\n" + cur)
-                    .subscribe(s -> writeToFile("outputs/ex5.txt", String.valueOf(s), false));
-            System.out.println("Ex5 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-    @Bean
-    CommandLineRunner ex6 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-            Mono<Long> count = client.get()
-                            .uri("/student/all")
-                            .retrieve()
-                            .bodyToFlux(Student.class)
-                            .count();
-
-            Mono<Float> sum = client.get()
-                            .uri("/student/all")
-                            .retrieve()
-                            .bodyToFlux(Student.class)
-                            .map(s -> s.getAverage())
-                            .reduce((s, cur) -> s + cur);
-
-            Float sumF = sum.block();
-            Long countL = count.block();
-            Float mean = sumF / countL;
-            writeToFile("outputs/ex6.txt", "Mean: " + String.valueOf(mean) + "\n", false);
-
-            client.get()
-                    .uri("/student/all")
-                    .retrieve()
-                    .bodyToFlux(Student.class)
-                    .map(s -> Math.pow((double)s.getAverage() - mean, 2))
-                    .reduce((total, s) -> total + s)
-                    //.doOnNext(System.out::println)
-                    .subscribe(s -> writeToFile("outputs/ex6.txt", "Standard Deviation: " + String.valueOf(Math.sqrt(s/countL)), true));
-
-            System.out.println("Ex6 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-    @Bean
-    CommandLineRunner ex7 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-            Mono<Long> count = client.get()
-                            .uri("/student/all")
-                            .retrieve()
-                            .bodyToFlux(Student.class)
-                            .filter(s -> s.getCredits() == 180)
-                            .count();
-
-            Mono<Float> sum = client.get()
-                            .uri("/student/all")
-                            .retrieve()
-                            .bodyToFlux(Student.class)
-                            .filter(s -> s.getCredits() == 180)
-                            .map(s -> s.getAverage())
-                            .reduce((s, cur) -> s + cur);
-
-            Float sumF = sum.block();
-            Long countL = count.block();
-            Float mean = sumF / countL;
-            writeToFile("outputs/ex7.txt", "Mean: " + String.valueOf(mean) + "\n", false);
-            
-
-            client.get()
-                    .uri("/student/all")
-                    .retrieve()
-                    .bodyToFlux(Student.class)
-                    .filter(s -> s.getCredits() == 180)
-                    .map(s -> Math.pow((double)s.getAverage() - mean, 2))
-                    .reduce((total, s) -> total + s)
-                    //.doOnNext(System.out::println)
-                    .subscribe(s -> writeToFile("outputs/ex7.txt", "Standard Deviation: " + String.valueOf(Math.sqrt(s/countL)), true));
-
-            System.out.println("Ex7 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-    @Bean
-    CommandLineRunner ex8 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-            client.get()
-                    .uri("/student/all")
-                    .retrieve()
-                    .bodyToFlux(Student.class)
-                    .sort((s1, s2) -> s2.getBirth_date().compareTo(s1.getBirth_date()))
-                    .subscribe(s -> writeToFile("outputs/ex8.txt", s.getName(), false));
-            System.out.println("Ex8 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-    @Bean
-    CommandLineRunner ex9 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-
-            Mono<Long> nStudentsM = client.get()
-                                            .uri("/student/all")
-                                            .retrieve()
-                                            .bodyToFlux(Teacher.class)
-                                            .count();
-
-            Long nStudents = nStudentsM.block();
-
-            Mono<Long> sumTeachers = client.get()
-                                            .uri("/student/all")
-                                            .retrieve()
-                                            .bodyToFlux(Teacher.class)
-                                            .map ((s) -> {
-                                                        return client.get()
-                                                            .uri("/relationship/findTeachers/" + s.getId())
-                                                            .retrieve()
-                                                            .bodyToFlux(Integer.class)
-                                                            .count();
-                                                        })
-                                            .count();
-            
-            Float sumTch = (float) sumTeachers.block();
-            Float meanTeacherStudent = calculateAverage(sumTch, nStudents);
-            writeToFile("outputs/ex9.txt", "Average number of teachers per Student: " + String.valueOf(meanTeacherStudent), false);
-
-            System.out.println("Ex9 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-    @Bean
-    CommandLineRunner ex10 (WebClient client) {
-        return args -> {
-            Instant start = Instant.now();
-
-            writeToFile("outputs/ex10.txt", "", false);
-
-            Mono<Long> mono = client.get()
-                                    .uri("/teacher/all")
-                                    .retrieve()
-                                    .bodyToFlux(Teacher.class)
-                                    .map ((t) -> {
-                                                return client.get()
-                                                    .uri("/relationship/findStudents/" + t.getId())
-                                                    .retrieve()
-                                                    .bodyToFlux(Integer.class)
-                                                    .doOnNext((id) ->  {
-                                                        System.out.println("Teacher: " + t.getName());
-                                                        writeToFile("outputs/ex10.txt", "Teacher: " + t.getName() + "\n", true);
-                                                        client.get()
-                                                                .uri("/student/" + id)
-                                                                .retrieve()
-                                                                .bodyToFlux(Student.class)
-                                                                .doOnNext(s -> System.out.println("\t" + s.getName()))
-                                                                .doOnNext(s -> writeToFile("outputs/ex10.txt", "\t" + s.getName() + "\n", true))
-                                                                .subscribe();
-                                                    })
-                                                    .count()
-                                                    .doOnNext(n -> System.out.println("\tNStudents: " + String.valueOf(n)))
-                                                    .doOnNext(n -> writeToFile("outputs/ex10.txt", "\tNStudents: " + String.valueOf(n) + "\n", true))
-                                                    .subscribe();
-                                                })
-                                    .count();
-            
-            Float sumTch = (float) mono.block();
-
-            
-            /*Flux<Teacher> allTeachers = client.get()
-                                            .uri("/teacher/all")
-                                            .retrieve()
-                                            .bodyToFlux(Teacher.class);*/
-
-            
-            //System.out.println(sumTch);
-            System.out.println("Ex10 done: " + durationFormat(Duration.between(start, Instant.now()))); 
-        };
-    }
-
-
-    public static void main(String [] args) {
-        new SpringApplicationBuilder(ReactiveClient.class)
-            .properties(Collections.singletonMap("server.port", "8081"))    
-            .run(args);
-        
-    }
-
-    public Boolean writeToFile(String filePath, String content, Boolean append) {
+    public static void run(WebClient client, Flux<Student> students, Flux<Teacher> teachers) {
         try {
-            new File(filePath.substring(0, filePath.lastIndexOf("/"))).mkdirs();
-
-            FileWriter myWriter = new FileWriter(filePath, append);
-            myWriter.write(content);
-            myWriter.close();
-            return true;
-        } catch (IOException e) {
-            return false;
+            Semaphore lock = new Semaphore(11);
+            ReactiveClient.getStudentNamesAndDates(students, lock);
+            ReactiveClient.getStudentCount(students, lock);
+            ReactiveClient.getActiveStudentsCount(students, lock);
+            ReactiveClient.getTotalCompletedCourses(students, lock);
+            ReactiveClient.getSortedLastYearStudents(students, lock);
+            ReactiveClient.getGradeAverageAndStd(students, lock);
+            ReactiveClient.getGradeAverageAndStdFinishedGraduation(students, lock);
+            ReactiveClient.getEldestStudentName(students, lock);
+            ReactiveClient.getAverageTeachersPerStudent(client, students, lock);
+            ReactiveClient.getNameAndNumberOfStudentsPerTeacher(client, teachers, lock);
+            ReactiveClient.getStudentData(client, students, lock);
+            ReactiveClient.getNameAndNumberOfStudentsPerTeacher(client, teachers, lock);
+            ReactiveClient.getStudentData(client, students, lock);
+            lock.acquire(11);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public static String durationFormat(Duration duration) {
-        return duration.toString()
-                .substring(2)
-                .replaceAll("(\\d[HMS])(?!$)", "$1 ")
-                .toLowerCase();
+
+    private static void getStudentNamesAndDates(Flux<Student> students, Semaphore lock) throws InterruptedException {
+        lock.acquire();
+        students.map(s -> Tuples.of(s.getName(), s.getBirthDate()))
+                .subscribe(System.out::println, System.err::println, lock::release);
     }
 
-    public static Float calculateAverage(Float sum, Long count) {
-        return sum/count;
+    private static void getStudentCount(Flux<Student> students, Semaphore lock) throws InterruptedException {
+        lock.acquire();
+        students.count().subscribe(System.out::println, System.err::println, lock::release);
     }
 
+    private static void getActiveStudentsCount(Flux<Student> students, Semaphore lock) throws InterruptedException {
+        lock.acquire();
+        students.filter(s -> s.getCredits() < 180)
+                .count()
+                .subscribe(System.out::println, System.err::println, lock::release);
+    }
+
+    private static void getTotalCompletedCourses(Flux<Student> students, Semaphore lock) throws InterruptedException {
+        lock.acquire();
+        students.map(s -> s.getCredits() / 6)
+                .reduce(Integer::sum)
+                .subscribe(System.out::println, System.err::println, lock::release);
+    }
+
+    private static void getSortedLastYearStudents(Flux<Student> students, Semaphore lock) throws InterruptedException {
+        lock.acquire();
+        students.filter(s -> s.getCredits() >= 120 && s.getCredits() < 180)
+                .sort((s1, s2) -> s2.getCredits() - s1.getCredits())
+                .map(s -> Tuples.of(s.getName(), s.getBirthDate(), s.getCredits(), s.getGpa()))
+                .subscribe(System.out::println, System.err::println, lock::release);
+    }
+
+    private static void getGradeAverageAndStd(Flux<Student> students, Semaphore lock) throws InterruptedException {
+        lock.acquire();
+        students.map(s -> Tuples.of(1.0, s.getGpa()))
+                .reduce((acc, x) -> acc.mapT1(a -> a + x.getT1()).mapT2(b -> b + x.getT2()))
+                .map(x -> x.getT2() / x.getT1())
+                .flatMap(avg -> students.map(s -> Tuples.of(1.0, Math.pow(s.getGpa() - avg, 2)))
+                                        .reduce((acc, x) -> acc.mapT1(a -> a + x.getT1()).mapT2(b -> b + x.getT2()))
+                                        .map(x -> Tuples.of(avg, Math.sqrt(((x.getT2() / x.getT1()))))))
+                .subscribe(System.out::println, System.err::println, lock::release);
+    }
+
+
+    private static void getGradeAverageAndStdFinishedGraduation(Flux<Student> students, Semaphore lock)
+        throws InterruptedException {
+        lock.acquire();
+        students.filter(s -> s.getCredits() == 180)
+                .map(s -> Tuples.of(1, s.getGpa()))
+                .reduce((acc, x) -> acc.mapT1(a -> a + x.getT1()).mapT2(b -> b + x.getT2()))
+                .map(x -> x.getT2() / x.getT1())
+                .flatMap(avg -> students.filter(s -> s.getCredits() == 180)
+                                        .map(s -> Tuples.of(1.0, Math.pow(s.getGpa() - avg, 2)))
+                                        .reduce((acc, x) -> acc.mapT1(a -> a + x.getT1()).mapT2(b -> b + x.getT2()))
+                                        .map(x -> Tuples.of(avg, Math.sqrt(((x.getT2() / x.getT1()))))))
+                .subscribe(System.out::println, System.err::println, lock::release);
+    }
+
+
+    private static void getEldestStudentName(Flux<Student> students, Semaphore lock) throws InterruptedException {
+        lock.acquire();
+        students.reduce((acc, x) -> acc.getBirthDate().compareTo(x.getBirthDate()) > 0 ? acc : x)
+                .map(Student::getName)
+                .subscribe(System.out::println, System.err::println, lock::release);
+    }
+
+    private static void getAverageTeachersPerStudent(WebClient client, Flux<Student> students, Semaphore lock)
+        throws InterruptedException {
+        lock.acquire();
+        students.flatMap(s -> client.get()
+                                    .uri("/student/" + s.getId() + "/supervisors")
+                                    .retrieve()
+                                    .bodyToFlux(Integer.class)
+                                    .count())
+                .map(s -> Tuples.of(1, s))
+                .reduce((acc, x) -> acc.mapT1(a -> a + x.getT1()).mapT2(b -> b + x.getT2()))
+                .map(x -> x.getT2() / x.getT1())
+                .subscribe(System.out::println, System.err::println, lock::release);
+    }
+
+
+    private static void getNameAndNumberOfStudentsPerTeacher(WebClient client, Flux<Teacher> teachers, Semaphore lock)
+        throws InterruptedException {
+        lock.acquire();
+        teachers.flatMap(t -> client.get()
+                                    .uri("/teacher/" + t.getId() + "/students")
+                                    .retrieve()
+                                    .bodyToFlux(Integer.class)
+                                    .flatMap(i -> client.get()
+                                                        .uri("/student/" + i)
+                                                        .retrieve()
+                                                        .bodyToMono(Student.class))
+                                    .map(Student::getName)
+                                    .reduce(new ArrayList<String>(), (acc, x) -> {acc.add(x); return acc;})
+                                    .map(x -> Tuples.of(t.getName(), x)))
+                .sort((a, b) -> b.getT2().size() - a.getT2().size())
+                .map(x -> Tuples.of(x.getT1(), x.getT2().size(), x.getT2()))
+                .subscribe(System.out::println, System.err::println, lock::release);
+
+    }
+
+    private static void getStudentData(WebClient client, Flux<Student> students, Semaphore lock)
+        throws InterruptedException {
+        lock.acquire();
+        students.flatMap(s -> client.get()
+                                    .uri("/student/" + s.getId() + "/supervisors")
+                                    .retrieve()
+                                    .bodyToFlux(Integer.class)
+                                    .flatMap(i -> client.get()
+                                                        .uri("/teacher/" + i)
+                                                        .retrieve()
+                                                        .bodyToMono(Teacher.class))
+                                    .map(Teacher::getName)
+                                    .reduce(new ArrayList<String>(), (acc, x) -> {acc.add(x); return acc;})
+                                    .map(x -> Tuples.of(s.getName(), s.getBirthDate(), s.getCredits(), s.getGpa(), x)))
+                .subscribe(System.out::println, System.err::println, lock::release);
+    }
+
+    private static <T> void dump(String filePath, T data, Function<T, String> callback) {
+        try (PrintWriter out = new PrintWriter(filePath)) {
+            out.println(callback.apply(data));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static long timeit(Runnable callback) {
+        try {
+            long start = System.currentTimeMillis(); callback.run(); long end = System.currentTimeMillis();
+            return end - start;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
-
-
-/// test functionalities 
-        // Teacher tests
-        /*@Bean
-        CommandLineRunner ListAllTeachers (WebClient client) {
-            return args -> {
-
-                client
-                    .get()
-                    .uri("/teacher/all")
-                    .accept(MediaType.TEXT_EVENT_STREAM)
-                    .retrieve()
-                    .bodyToFlux(Teacher.class)
-                    .subscribe(System.out::println);
-            };
-        }*/
-
-        /*@Bean
-        CommandLineRunner addTeacher (WebClient client) {
-            return args -> {
-
-                client
-                    .post()
-                    .uri("/teacher/add/4/dionisio")
-                    .retrieve()
-                    .bodyToMono(Teacher.class)
-                    .subscribe(System.out::println);
-            };
-
-        }*/
-
-        /*@Bean
-        CommandLineRunner deleteTeacher (WebClient client) {
-            return args -> {
-
-                client
-                    .delete()
-                    .uri("/teacher/del/4")
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .subscribe(System.out::println);
-            };
-
-        }*/
-
-        /*@Bean
-        CommandLineRunner updateTeacher (WebClient client) {
-            return args -> {
-
-                client
-                    .delete()
-                    .uri("/teacher/upd/5/dionisio")
-                    .retrieve()
-                    .bodyToMono(Teacher.class)
-                    .subscribe(System.out::println);
-            };
-
-        }*/
-        
-        // Student tests
-
-        /*@Bean
-        CommandLineRunner ListAllStudents (WebClient client) {
-            return args -> {
-
-                client
-                    .get()
-                    .uri("/student/all")
-                    .accept(MediaType.TEXT_EVENT_STREAM)
-                    .retrieve()
-                    .bodyToFlux(Student.class)
-                    .subscribe(System.out::println);
-            };
-        }*/
-
-        /*@Bean     // works
-        CommandLineRunner addStudent (WebClient client) {
-            return args -> {
-
-                client
-                    .post()
-                    .uri("/student/add/4/pereira/2001-03-12/60/15.2")
-                    .retrieve()
-                    .bodyToMono(Student.class)
-                    .subscribe(System.out::println);
-            };
-        }*/
-
-        /*@Bean       // works
-        CommandLineRunner deleteStudent (WebClient client) {
-            return args -> {
-
-                client
-                    .delete()
-                    .uri("/student/del/4")
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .subscribe(System.out::println);
-            };
-
-        }*/
-
-        /*@Bean     // works
-        CommandLineRunner updateStudent (WebClient client) {
-            return args -> {
-
-                client
-                    .put()
-                    .uri("/student/upd/2/marcia/2001-06-12/60/19.5")
-                    .retrieve()
-                    .bodyToMono(Student.class)
-                    .subscribe(System.out::println);
-            };
-
-        }*/
-
-        // Relationship tests
-
-        /*@Bean     // works
-        CommandLineRunner addRelationship (WebClient client) {
-            return args -> {
-
-                client
-                    .post()
-                    .uri("/relationship/add/4/3")
-                    .retrieve()
-                    .bodyToMono(Relationship.class)
-                    .subscribe(System.out::println);
-            };
-        }*/
-
-        /*@Bean       // works
-        CommandLineRunner getRelationship (WebClient client) {
-            return args -> {
-
-                client
-                    .get()
-                    .uri("/relationship/1")
-                    .retrieve()
-                    .bodyToMono(Relationship.class)
-                    .subscribe(System.out::println);
-            };
-        }*/
-
-        /*@Bean       // works
-        CommandLineRunner getTeachers (WebClient client) {
-            return args -> {
-
-                client
-                    .get()
-                    .uri("/relationship/findTeachers/4")
-                    .retrieve()
-                    .bodyToFlux(Integer.class)
-                    .subscribe(System.out::println);
-            };
-        }*/
-
-        /*@Bean       // works
-        CommandLineRunner getStudents (WebClient client) {
-            return args -> {
-
-                client
-                    .get()
-                    .uri("/relationship/findStudents/3")
-                    .retrieve()
-                    .bodyToFlux(Integer.class)
-                    .subscribe(System.out::println);
-            };
-        }*/
-
-        /*@Bean       // works
-        CommandLineRunner deleteRelationship (WebClient client) {
-            return args -> {
-
-                client
-                    .delete()
-                    .uri("/relationship/del/4/3")
-                    .retrieve()
-                    .bodyToFlux(Void.class)
-                    .subscribe(System.out::println);
-            };
-        }*/
-
