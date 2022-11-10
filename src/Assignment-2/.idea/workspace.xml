@@ -7,6 +7,9 @@
     <list default="true" id="c12beb68-dd6d-4051-b266-0f37223aa34c" name="Changes" comment="k">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveDatabaseLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveDatabaseLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/ReactiveServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/ReactiveServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/RelationshipController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/RelationshipController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,6 +64,13 @@
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="uc.mei.is.server.config" />
     </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="SpringBootApplicationConfigurationType" />
+      </set>
+    </option>
   </component>
   <component name="RunManager" selected="Application.ReactiveClient">
     <configuration name="ReactiveClient" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
@@ -159,8 +169,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Application.ReactiveClient" />
-        <item itemvalue="Application.ReactiveServer" />
         <item itemvalue="Application.ReactiveDatabaseLoader" />
+        <item itemvalue="Application.ReactiveServer" />
         <item itemvalue="Spring Boot.ReactiveClient" />
         <item itemvalue="Spring Boot.ReactiveServer" />
       </list>
@@ -182,6 +192,12 @@
       <workItem from="1667832726117" duration="43747000" />
       <workItem from="1667903996126" duration="25935000" />
       <workItem from="1667948177823" duration="13903000" />
+      <workItem from="1668007322285" duration="13000" />
+      <workItem from="1668007353218" duration="36000" />
+      <workItem from="1668007407373" duration="2201000" />
+      <workItem from="1668019751588" duration="895000" />
+      <workItem from="1668086449672" duration="2210000" />
+      <workItem from="1668110387476" duration="5903000" />
     </task>
     <servers />
   </component>

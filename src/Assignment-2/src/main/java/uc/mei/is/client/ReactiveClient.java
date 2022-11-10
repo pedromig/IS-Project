@@ -109,7 +109,6 @@ public class ReactiveClient {
                 .subscribe(report::println, System.err::println, lock::release);
     }
 
-
     private static void getGradeAverageAndStdFinishedGraduation(Flux<Student> students, Semaphore lock,
                                                                 PrintWriter report)
         throws InterruptedException {
