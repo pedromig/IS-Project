@@ -5,12 +5,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
+import reactor.util.retry.Retry;
 import org.springframework.web.reactive.function.client.WebClient;
 
+
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuples;
 import uc.mei.is.server.entity.Student;
 import uc.mei.is.server.entity.Teacher;
@@ -22,8 +26,10 @@ public class ReactiveClient {
     public static void main(String[] args) throws InterruptedException {
         WebClient client = WebClient.create("http://localhost:8080");
 
-        Flux<Student> students = client.get().uri("/student/list").retrieve().bodyToFlux(Student.class);
-        Flux<Teacher> teachers = client.get().uri("/teacher/list").retrieve().bodyToFlux(Teacher.class);
+        Flux<Student> students = client.get().uri("/student/list").retrieve().bodyToFlux(Student.class).retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
+                                            .publishOn(Schedulers.boundedElastic());
+        Flux<Teacher> teachers = client.get().uri("/teacher/list").retrieve().bodyToFlux(Teacher.class).retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
+                                            .publishOn(Schedulers.boundedElastic());
 
         System.out.println("Elapsed Time: " + timeit(() -> run(client, students, teachers)));
     }
@@ -145,6 +151,7 @@ public class ReactiveClient {
                                     .uri("/student/" + s.getId() + "/supervisors")
                                     .retrieve()
                                     .bodyToFlux(Integer.class)
+                                    .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
                                     .count())
                 .map(s -> Tuples.of(1, s))
                 .reduce((acc, x) -> acc.mapT1(a -> a + x.getT1()).mapT2(b -> b + x.getT2()))
@@ -162,6 +169,7 @@ public class ReactiveClient {
                                     .uri("/teacher/" + t.getId() + "/students")
                                     .retrieve()
                                     .bodyToFlux(Integer.class)
+                                    .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
                                     .flatMap(i -> client.get()
                                                         .uri("/student/" + i)
                                                         .retrieve()
@@ -184,6 +192,7 @@ public class ReactiveClient {
                                     .uri("/student/" + s.getId() + "/supervisors")
                                     .retrieve()
                                     .bodyToFlux(Integer.class)
+                                    .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
                                     .flatMap(i -> client.get()
                                                         .uri("/teacher/" + i)
                                                         .retrieve()
@@ -209,9 +218,13 @@ public class ReactiveClient {
     private static ArrayList<PrintWriter> openReportFiles() {
         ArrayList<PrintWriter> files = new ArrayList<>();
         try {
+            if (!Files.exists(Paths.get(REPORT_DIR))) {
+                Files.createDirectories(Paths.get(REPORT_DIR));
+            }
+
             for (int i = 1; i <= 11; ++i) {
                 Path filePath = Paths.get(REPORT_DIR, "ex" + i + ".csv");
-                files.add(new PrintWriter(new FileOutputStream(filePath.toString(), true)));
+                files.add(new PrintWriter(new FileOutputStream(filePath.toString())));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
