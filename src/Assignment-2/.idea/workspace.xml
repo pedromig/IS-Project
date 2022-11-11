@@ -7,9 +7,6 @@
     <list default="true" id="c12beb68-dd6d-4051-b266-0f37223aa34c" name="Changes" comment="k">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveDatabaseLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveDatabaseLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/ReactiveServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/ReactiveServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/RelationshipController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/RelationshipController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
