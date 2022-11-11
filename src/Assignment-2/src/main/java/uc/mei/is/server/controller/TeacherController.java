@@ -14,6 +14,7 @@ import uc.mei.is.server.repository.RelationshipRepository;
 import uc.mei.is.server.repository.TeacherRepository;
 
 import java.util.logging.Level;
+
 import org.apache.log4j.Logger;
 
 @RestController
@@ -27,26 +28,37 @@ public class TeacherController {
     @PostMapping
     public Mono<Teacher> create(@RequestBody Teacher teacher) {
         return this.teacherRepository.save(teacher)
-                                    .log(log.getName(), Level.FINEST)
-                                    .doOnSubscribe(s -> log.info("Teacher created: " + teacher.toString()))            
-                                    .onErrorContinue((ex, value) -> log.warn("Unexpected error while handling {}", ex));
+                                     .log(log.getName(), Level.FINEST)
+                                     .doOnSubscribe(s -> log.info("Teacher created: " + teacher.toString()))
+                                     .onErrorContinue((ex, value) -> log.warn(
+                                         "Unexpected error while handling {}",
+                                         ex
+                                     ));
     }
 
     @PutMapping
     public Mono<Teacher> update(@RequestBody Teacher teacher) {
         return this.teacherRepository.findById(teacher.getId())
-                                    .flatMap(x -> this.teacherRepository.save(teacher))
-                                    .log(log.getName(), Level.FINEST)
-                                    .doOnSubscribe(s -> log.info("Teacher updated: " + teacher.toString()))            
-                                    .onErrorContinue((ex, value) -> log.warn("Unexpected error while handling {}", ex));
+                                     .flatMap(x -> this.teacherRepository.save(teacher))
+                                     .log(log.getName(), Level.FINEST)
+                                     .doOnSubscribe(s -> log.info("Teacher updated: " + teacher.toString()))
+                                     .onErrorContinue((ex, value) -> log.warn(
+                                         "Unexpected error while handling {}",
+                                         ex
+                                     ));
     }
 
     @GetMapping(value = "/list")
-    public Flux<Teacher> getAll() {
+    public Flux<ResponseEntity<Teacher>> getAll() {
         return this.teacherRepository.findAll()
-                                    .log(log.getName(), Level.FINEST)
-                                    .doOnSubscribe(s -> log.info("All teachers listed"))            
-                                    .onErrorContinue((ex, value) -> log.warn("Unexpected error while handling {}", ex));
+                                     .map(ResponseEntity::ok)
+                                     .defaultIfEmpty(ResponseEntity.notFound().build())
+                                     .log(log.getName(), Level.FINEST)
+                                     .doOnSubscribe(s -> log.info("All teachers listed"))
+                                     .onErrorContinue((ex, value) -> log.warn(
+                                         "Unexpected error while handling {}",
+                                         ex
+                                     ));
     }
 
     @GetMapping(value = "/{id}")
@@ -55,27 +67,38 @@ public class TeacherController {
                                      .map(ResponseEntity::ok)
                                      .defaultIfEmpty(ResponseEntity.notFound().build())
                                      .log(log.getName(), Level.FINEST)
-                                     .doOnSubscribe(s -> log.info("Teacher " + id + " listed"))            
-                                     .onErrorContinue((ex, value) -> log.warn("Unexpected error while handling {}", ex));
+                                     .doOnSubscribe(s -> log.info("Teacher " + id + " listed"))
+                                     .onErrorContinue((ex, value) -> log.warn(
+                                         "Unexpected error while handling {}",
+                                         ex
+                                     ));
     }
 
     @DeleteMapping(value = "/{id}")
-    public Mono<Void> delete(@RequestBody Teacher teacher) {
-        return this.teacherRepository.deleteById(teacher.getId())
-                                    .log(log.getName(), Level.FINEST)
-                                    .doOnSubscribe(s -> log.info("Teacher " + teacher.getId() + " deleted"))            
-                                    .onErrorContinue((ex, value) -> log.warn("Unexpected error while handling {}", ex));
+    public Mono<Void> delete(@PathVariable int id) {
+        return this.teacherRepository.deleteById(id)
+                                     .log(log.getName(), Level.FINEST)
+                                     .doOnSubscribe(s -> log.info("Teacher " + id + " deleted"))
+                                     .onErrorContinue((ex, value) -> log.warn(
+                                         "Unexpected error while handling {}",
+                                         ex
+                                     ));
 
     }
 
     @GetMapping(value = "/{id}/students")
-    public Flux<Integer> studentList(@PathVariable int id) {
+    public Flux<ResponseEntity<Integer>> studentList(@PathVariable int id) {
         log.info("Students of teacher " + id + " listed");
         return this.relationshipRepository.findAllByTeacherId(id)
-                                     .map(Relationship::getStudentId)
-                                     .log(log.getName(), Level.FINEST)
-                                     .doOnSubscribe(s -> log.info("Students of teacher " + id + " listed"))            
-                                     .onErrorContinue((ex, value) -> log.warn("Unexpected error while handling {}", ex));
+                                          .map(Relationship::getStudentId)
+                                          .map(ResponseEntity::ok)
+                                          .defaultIfEmpty(ResponseEntity.notFound().build())
+                                          .log(log.getName(), Level.FINEST)
+                                          .doOnSubscribe(s -> log.info("Students of teacher " + id + " listed"))
+                                          .onErrorContinue((ex, value) -> log.warn(
+                                              "Unexpected error while handling {}",
+                                              ex
+                                          ));
     }
 
 }

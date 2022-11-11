@@ -21,9 +21,7 @@ import uc.mei.is.server.entity.Student;
 import uc.mei.is.server.entity.Teacher;
 
 public class ReactiveClient {
-
     private static final String REPORT_DIR = "output";
-
     public static void main(String[] args) throws InterruptedException {
         WebClient client = WebClient.create("http://localhost:8080");
         Flux<Student> students = client.get()

@@ -7,6 +7,9 @@
     <list default="true" id="c12beb68-dd6d-4051-b266-0f37223aa34c" name="Changes" comment="k">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/client/ReactiveClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/RelationshipController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/RelationshipController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/StudentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/StudentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/TeacherController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uc/mei/is/server/controller/TeacherController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -195,6 +198,8 @@
       <workItem from="1668019751588" duration="895000" />
       <workItem from="1668086449672" duration="2210000" />
       <workItem from="1668110387476" duration="5903000" />
+      <workItem from="1668191131533" duration="1026000" />
+      <workItem from="1668205641237" duration="100000" />
     </task>
     <servers />
   </component>
