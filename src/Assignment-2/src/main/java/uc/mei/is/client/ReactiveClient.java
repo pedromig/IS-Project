@@ -8,6 +8,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import reactor.util.retry.Retry;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,18 +27,45 @@ public class ReactiveClient {
     public static void main(String[] args) throws InterruptedException {
         WebClient client = WebClient.create("http://localhost:8080");
 
-        Flux<Student> students = client.get().uri("/student/list").retrieve().bodyToFlux(Student.class).retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
-                                            .publishOn(Schedulers.boundedElastic());
-        Flux<Teacher> teachers = client.get().uri("/teacher/list").retrieve().bodyToFlux(Teacher.class).retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
-                                            .publishOn(Schedulers.boundedElastic());
+        /*
+         * dataset A: Students: 20	Teachers: 20
+         * dataset B: Students: 250	Teachers: 20
+         * dataset C: Students: 20	Teachers: 250
+         * dataset D: Students: 250	Teachers: 250
+         * Max Relations: 5
+         */
 
-        System.out.println("Elapsed Time: " + timeit(() -> run(client, students, teachers)));
+        /*try {
+            Path filePath = Paths.get("data.csv");
+            PrintWriter writer = new PrintWriter(new FileOutputStream(filePath.toString(), true));
+            writer.write("dataset,type,time\n");
+            writer.flush();
+            for (int i = 0; i < 30; i++) {*/
+
+                Flux<Student> students = client.get().uri("/student/list").retrieve().bodyToFlux(Student.class).retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
+                                            //.publishOn(Schedulers.boundedElastic())
+                                            ;
+                Flux<Teacher> teachers = client.get().uri("/teacher/list").retrieve().bodyToFlux(Teacher.class).retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
+                                                    //.publishOn(Schedulers.boundedElastic())
+                                                    ;
+
+                System.out.println("Elapsed Time: " + timeit(() -> run(client, students, teachers)));
+                /*writer.write("C,block," + timeit(() -> run(client, students, teachers)) + "\n");
+                writer.flush();
+                System.out.println("Run " + i);
+                TimeUnit.SECONDS.sleep(3);
+            }
+            writer.close();
+        } catch (Exception e) {
+            
+        }*/
+        
     }
 
     public static void run(WebClient client, Flux<Student> students, Flux<Teacher> teachers) {
         ArrayList<PrintWriter> reportFiles = ReactiveClient.openReportFiles();
         try {
-            Semaphore lock = new Semaphore(11);
+            Semaphore lock = new Semaphore(1);
             ReactiveClient.getStudentNamesAndDates(students, lock, reportFiles.get(0));
             ReactiveClient.getStudentCount(students, lock, reportFiles.get(1));
             ReactiveClient.getActiveStudentsCount(students, lock, reportFiles.get(2));
@@ -49,7 +77,7 @@ public class ReactiveClient {
             ReactiveClient.getAverageTeachersPerStudent(client, students, lock, reportFiles.get(8));
             ReactiveClient.getNameAndNumberOfStudentsPerTeacher(client, teachers, lock, reportFiles.get(9));
             ReactiveClient.getStudentData(client, students, lock, reportFiles.get(10));
-            lock.acquire(11);
+            lock.acquire(1);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -14,10 +14,10 @@ import uc.mei.is.server.entity.Student;
 import uc.mei.is.server.entity.Teacher;
 
 public class ReactiveDatabaseLoader {
-    private static final int nStudents = 100;
-    private static final int nTeachers = 100;
-    private static final int maxSupervisors = 10;
-    private static final int maxStudents = 10;
+    private static final int nStudents = 20;
+    private static final int nTeachers = 250;
+    private static final int maxSupervisors = 5;
+    private static final int maxStudents = 5;
     private static final int seed = 42;
 
     public static void main(String[] args) {
