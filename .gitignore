@@ -109,3 +109,6 @@ src/Assignment-2/.vscode
 src/Assignment-2/outputs
 src/Assignment-2/log.out
 src/Assignment-2/output/*
+src/Assignment-3/kafkastreams/.vscode/
+src/Assignment-3/kafkastreams/target/
+src/Assignment-3/.vscode/

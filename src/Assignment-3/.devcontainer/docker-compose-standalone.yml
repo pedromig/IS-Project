@@ -14,19 +14,6 @@ services:
     volumes:
       - ../sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
-  # wildfly:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.wildfly
-  #   container_name: wildfly
-  #   links:
-  #     - database
-  #   ports:
-  #     - 8080:8080
-  #     - 8443:8443
-  #     - 9990:9990
-  #     - 9993:9993
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
     container_name: zookeeper

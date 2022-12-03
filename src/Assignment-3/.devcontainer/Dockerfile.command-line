@@ -1,4 +1,4 @@
-FROM maven:3-openjdk-16
+FROM maven:3-openjdk-18
 
 #From https://gist.github.com/MichalZalecki/4a87880bbe7a3a5428b5aebebaa5cd97
 ARG USER_NAME="main"

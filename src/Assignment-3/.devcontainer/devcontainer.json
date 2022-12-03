@@ -1,5 +1,5 @@
 {
-	"name": "maven-kafka+wildfly+postgres",
+	"name": "maven-kafka+postgres",
 	"dockerComposeFile": "docker-compose-standalone.yml",
 	"workspaceFolder": "/workspace",
 	"service": "command-line",
