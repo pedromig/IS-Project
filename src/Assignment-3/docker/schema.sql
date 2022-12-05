@@ -1,0 +1,5 @@
+CREATE TABLE stations
+(
+    name VARCHAR(512) PRIMARY KEY,
+    location VARCHAR(512) NOT NULL
+)
