@@ -7,41 +7,36 @@ import java.util.Random;
 
 public class WeatherStation {
     private static final float SEVERE_ALERT_GENERATION_PROBABILITY = 0.3F;
-
+    private static final int KEEP_ALIVE = 2;
     private final String name;
-    private final String location;
     private final ArrayList<Alert> alerts;
+    private final Random rng;
+    private int live;
 
-    private Random rng;
-
-    public WeatherStation(String name, String location, long seed) {
-        this(name, location);
-        this.rng = new Random(seed);
-    }
-
-    public WeatherStation(String name, String location) {
+    public WeatherStation(String name) {
         this.name = name;
-        this.location = location;
         this.rng = new Random(42);
         this.alerts = new ArrayList<>();
+        this.live = KEEP_ALIVE;
     }
 
-    public Measurement getMeasurement() {
-        double temperature = rng.nextGaussian() * 35 + 70;
+    public Measurement getMeasurement(String location) {
         if (rng.nextFloat(1) < WeatherStation.SEVERE_ALERT_GENERATION_PROBABILITY) {
-            this.alerts.add(new Alert(this, Alert.AlertType.SEVERE, Alert.Event.values()[rng.nextInt(Alert.Event.values().length)]));
+            this.alerts.add(new Alert(this, location,
+                    Alert.SEVERE, Alert.EVENTS[rng.nextInt(Alert.EVENTS.length)]));
         }
-        return new Measurement(this, temperature);
+        double temperature = rng.nextDouble(32, 104);
+        return new Measurement(this, location, temperature);
     }
 
-    public ArrayList<Alert> alerts() throws CloneNotSupportedException {
+    public ArrayList<Alert> alerts() {
         ArrayList<Alert> alerts = new ArrayList<>();
 
         // Update Alerts
         for (Alert alert : this.alerts) {
-            if (alert.getType() == Alert.AlertType.SEVERE) {
+            if (alert.getType().equals(Alert.SEVERE)) {
                 alerts.add(alert.clone());
-                alert.setType(Alert.AlertType.NORMAL);
+                alert.setType(Alert.NORMAL);
             }
         }
 
@@ -49,7 +44,7 @@ public class WeatherStation {
         Timestamp now = Timestamp.from(Instant.now());
         ArrayList<Alert> tmp = new ArrayList<>();
         for (Alert alert : alerts) {
-            if (now.equals(alert.getEnd())) {
+            if (now.compareTo(alert.getEnd()) > 0) {
                 tmp.add(alert);
                 this.alerts.remove(alert);
             }
@@ -58,12 +53,20 @@ public class WeatherStation {
         return alerts;
     }
 
-    public String getName() {
-        return name;
+    public void online() {
+        this.live = Math.min(this.live + 1, KEEP_ALIVE);
     }
 
-    public String getLocation() {
-        return location;
+    public void offline() {
+        this.live = Math.max(this.live - 1, 0);
+    }
+
+    public boolean live() {
+        return this.live != 0;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public Random getRng() {
@@ -72,6 +75,6 @@ public class WeatherStation {
 
     @Override
     public String toString() {
-        return "WeatherStation(name=" + this.getName() + ", location=" + this.getLocation() + ")";
+        return "WeatherStation(name=" + this.getName() + ")";
     }
 }

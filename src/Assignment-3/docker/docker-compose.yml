@@ -1,19 +1,22 @@
-version: "3.7"
+version: "3.9"
 
 services:
   db:
-    image: postgres:10.5
+    image: postgres:14.5-alpine
     container_name: is-db
     restart: unless-stopped
     ports:
       - 5432:5432
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: kafka
+    env_file:
+      - .env
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 10s
+      timeout: 3s
+      retries: 3
     volumes:
-      - ./schema.sql:/docker-entrypoint-initdb.d/create_tables.sql
-      - ./data:/var/lib/postgresql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./db/data:/var/lib/postgresql
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
@@ -31,20 +34,51 @@ services:
 
   # Exposes 9092 for external connections to the broker
   # Use kafka:29092 for connections internal on the docker network
-  broker:
+  broker-one:
     image: confluentinc/cp-kafka:7.0.1
-    container_name: broker
+    container_name: broker-one
+    hostname: broker-one
     ports:
       - 9092:9092
     depends_on:
       - zookeeper
+    healthcheck:
+      test: echo stat | nc localhost 9092
+      interval: 10s
+      timeout: 10s
+      retries: 3
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ADVERTISED_HOST_NAME: broker
+      KAFKA_ADVERTISED_HOST_NAME: broker-one
       KAFKA_BROKER_RACK: r1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:29092,EXTERNAL://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-one:29092,EXTERNAL://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # Exposes 9093 for external connections to the broker
+  # Use kafka:29093 for connections internal on the docker network
+  broker-two:
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: broker-two
+    hostname: broker-two
+    ports:
+      - 9093:9093
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: echo stat | nc localhost 9093
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ADVERTISED_HOST_NAME: broker-two
+      KAFKA_BROKER_RACK: r2
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-two:29093,EXTERNAL://localhost:9093

@@ -1,129 +1,143 @@
 package mei.dei.uc;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadLocalRandom;
 
+import mei.dei.uc.model.Alert;
 import mei.dei.uc.model.Measurement;
 import mei.dei.uc.model.WeatherStation;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
 
-import mei.dei.uc.model.Alert;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.json.JSONObject;
 
+@SuppressWarnings("BusyWait")
 public class WeatherService {
-    private static final String DB_INFO_TOPIC = "DBInfo";
+    private static final String BOOTSTRAP_SERVERS = "localhost:9092,localhost:9093";
+    private static final String DB_INFO_TOPIC_STATIONS = "DBInfoStations";
+    private static final String DB_INFO_TOPIC_LOCATIONS = "DBInfoLocations";
+    private static final String WEATHER_TOPIC = "Weather";
+    private static final String ALERTS_TOPIC = "Alerts";
+    private static final Integer EVENT_RATE = 10;
+    private static final Integer SLEEP_TIMEOUT = 5000;
 
-    public static void main(String[] args) {
-        Properties consumerProperties = WeatherService.getBrokerProperties();
-        consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, "WeatherServiceConsumer");
+    public static void main(String[] args) throws InterruptedException {
+        HashMap<String, WeatherStation> stations = new HashMap<>();
+        HashSet<String> locations;
 
-        try (Consumer<String, String> dbinfo = new KafkaConsumer<>(consumerProperties)) {
-            dbinfo.subscribe(Collections.singletonList(DB_INFO_TOPIC));
+        try (Consumer<String, String> locationConsumer = WeatherService.createConsumer(DB_INFO_TOPIC_LOCATIONS);
+             Consumer<String, String> stationConsumer = WeatherService.createConsumer(DB_INFO_TOPIC_STATIONS);
+             Producer<String, String> alertProducer = WeatherService.createProducer();
+             Producer<String, String> weatherProducer = WeatherService.createProducer()) {
 
-            Properties producerProperties = WeatherService.getBrokerProperties();
-            HashMap<String, Thread> weatherStations = new HashMap<>();
+            while (!Thread.interrupted()) {
 
-            while (true) {
-                HashMap<String, WeatherStation> active = new HashMap<>();
+                HashSet<String> liveStationRecords = new HashSet<>();
+                HashSet<String> liveLocationRecords = new HashSet<>();
 
-                // Listen for new Weather Stations
-                ConsumerRecords<String, String> records = dbinfo.poll(Duration.ofSeconds(50000));
-                for (ConsumerRecord<String, String> record : records) {
+                // Listen for Weather Stations
+                ConsumerRecords<String, String> stationRecords = stationConsumer.poll(Duration.ofMillis(5000));
+                for (ConsumerRecord<String, String> record : stationRecords) {
                     JSONObject json = new JSONObject(record.value());
-                    String name = json.getJSONObject("payload").getString("name");
-                    String location = json.getJSONObject("payload").getString("location");
-                    if (!active.containsKey(name)) {
-                        WeatherStation ws = new WeatherStation(name, location);
-                        active.put(name, ws);
+                    String station = json.getJSONObject("payload").getString("name");
+                    liveStationRecords.add(station);
+                    if (stations.get(station) == null) {
+                        stations.put(station, new WeatherStation(station));
                     }
                 }
 
-                // Log the active stations
-                System.out.println("=> Active Stations (Threads): " + active.size());
-                for (WeatherStation station : active.values()) {
-                    System.out.println(" -> " + station);
+                // Listen for Locations
+                ConsumerRecords<String, String> locationRecords = locationConsumer.poll(Duration.ofMillis(5000));
+                for (ConsumerRecord<String, String> record : locationRecords) {
+                    JSONObject json = new JSONObject(record.value());
+                    String location = json.getJSONObject("payload").getString("name");
+                    liveLocationRecords.add(location);
                 }
 
-                // Add newly inserted weather stations
-                for (WeatherStation station : active.values()) {
-                    if (!weatherStations.containsKey(station.getName())) {
-                        Thread t = new Thread(new WeatherStationService(station, producerProperties));
-                        weatherStations.put(station.getName(), t);
-                        t.start();
+                // Update Live Locations & Stations
+                locations = liveLocationRecords;
+                for (WeatherStation station : stations.values()) {
+                    if (liveStationRecords.contains(station.getName())) {
+                        station.online();
+                    } else {
+                        station.offline();
                     }
                 }
 
-                // Remove inactive weather stations
-                ArrayList<String> inactive = new ArrayList<>();
-                for (String station : weatherStations.keySet()) {
-                    if (!active.containsKey(station)) {
-                        inactive.add(station);
-                        active.remove(station);
+                ArrayList<String> remove = new ArrayList<>();
+                for (WeatherStation station : stations.values()) {
+                    if (!station.live()) {
+                        remove.add(station.getName());
                     }
                 }
-                for (String name : inactive) {
-                    Thread t = weatherStations.remove(name);
-                    t.interrupt();
+
+                for (String station : remove) {
+                    stations.remove(station);
                 }
-            }
-        }
-    }
 
-    private static class WeatherStationService implements Runnable {
+                // Generate Events
+                ArrayList<String> currentLocations = new ArrayList<>(locations.stream().toList());
+                for (WeatherStation station : stations.values()) {
+                    for (int j = 0; j < WeatherService.EVENT_RATE; ++j) {
+                        if (currentLocations.size() == 0)
+                            break;
+                        // Pick a Random Location
+                        int l = ThreadLocalRandom.current().nextInt(0, currentLocations.size() - 1);
 
-        private static final String WEATHER_TOPIC = "Weather";
-        private static final String ALERTS_TOPIC = "Alerts";
-
-        private final WeatherStation station;
-        private final Properties properties;
-
-        public WeatherStationService(WeatherStation station, Properties properties) {
-            this.station = station;
-            this.properties = (Properties) properties.clone();
-            this.properties.put(ProducerConfig.CLIENT_ID_CONFIG, "WeatherService-" + this.station.getName());
-        }
-
-        public void run() {
-            Producer<String, String> producer = new KafkaProducer<>(properties);
-            try {
-                while (!Thread.interrupted()) {
-                    // Generate Random Measurements and Alerts
-                    int n = ThreadLocalRandom.current().nextInt(0, 10);
-                    for (int i = 0; i < n; ++i) {
-                        // Fetch Measurements
-                        Measurement measurement = station.getMeasurement();
-                        producer.send(new ProducerRecord<>(WEATHER_TOPIC,
+                        // Generate Measurements
+                        Measurement measurement = station.getMeasurement(currentLocations.get(l));
+                        weatherProducer.send(new ProducerRecord<>(WEATHER_TOPIC,
                                 "measurement", measurement.toJson().toString()));
 
-                        // Fetch Alerts
+                        // Emmit Alerts
                         for (Alert alert : station.alerts()) {
-                            producer.send(new ProducerRecord<>(ALERTS_TOPIC,
+                            alertProducer.send(new ProducerRecord<>(ALERTS_TOPIC,
                                     "alert", alert.toJson().toString()));
                         }
                     }
-                    Thread.sleep(10000);
                 }
-            } catch (InterruptedException | CloneNotSupportedException e) {
-                System.out.println("!! Stopping Weather Station: " + this.station);
-                producer.close();
+                Thread.sleep(SLEEP_TIMEOUT);
             }
         }
     }
 
-    private static Properties getBrokerProperties() {
+    public static <K, V> Consumer<K, V> createConsumer(String topic) {
+        // Setup Instance Properties
         Properties properties = new Properties();
-        try {
-            properties.load(new FileInputStream("resources/broker.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return properties;
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "WeatherServiceConsumer-" + topic);
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, WeatherService.BOOTSTRAP_SERVERS);
+        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
+        properties.put(ConsumerConfig.ALLOW_AUTO_CREATE_TOPICS_CONFIG, true);
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+
+        // Create Consumer Instance and Subscribe to topic
+        Consumer<K, V> consumer = new KafkaConsumer<>(properties);
+        consumer.subscribe(Collections.singletonList(topic));
+        return consumer;
     }
+
+    private static <K, V> Producer<K, V> createProducer() {
+        Properties properties = new Properties();
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, WeatherService.BOOTSTRAP_SERVERS);
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        properties.put(ProducerConfig.RETRIES_CONFIG, 0);
+        properties.put(ProducerConfig.ACKS_CONFIG, "all");
+        properties.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+        properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
+
+        return new KafkaProducer<>(properties);
+    }
+
 }
+
