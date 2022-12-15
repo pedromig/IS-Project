@@ -31,7 +31,7 @@ public class Alert implements Cloneable {
         this.type = type;
         this.event = event;
         this.start = Timestamp.from(Instant.now());
-        this.end = Timestamp.from(Instant.now().plusSeconds(station.getRng().nextInt(0, 20)));
+        this.end = Timestamp.from(Instant.now().plusSeconds(station.getRng().nextInt(5, 15)));
     }
 
     public WeatherStation getStation() {

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class WeatherStation {
-    private static final float SEVERE_ALERT_GENERATION_PROBABILITY = 0.3F;
+    private static final float SEVERE_ALERT_GENERATION_PROBABILITY = 0.2F;
     private static final int KEEP_ALIVE = 2;
     private final String name;
     private final ArrayList<Alert> alerts;
@@ -31,7 +31,6 @@ public class WeatherStation {
 
     public ArrayList<Alert> alerts() {
         ArrayList<Alert> alerts = new ArrayList<>();
-
         // Update Alerts
         for (Alert alert : this.alerts) {
             if (alert.getType().equals(Alert.SEVERE)) {
@@ -42,14 +41,17 @@ public class WeatherStation {
 
         // Add Alert to the list when finished
         Timestamp now = Timestamp.from(Instant.now());
-        ArrayList<Alert> tmp = new ArrayList<>();
-        for (Alert alert : alerts) {
+        ArrayList<Alert> remove = new ArrayList<>();
+        for (Alert alert : this.alerts) {
             if (now.compareTo(alert.getEnd()) > 0) {
-                tmp.add(alert);
-                this.alerts.remove(alert);
+                alerts.add(alert.clone());
+                remove.add(alert);
             }
         }
-        alerts.addAll(tmp);
+        // Remove Finished Alerts
+        for (Alert alert : remove) {
+            this.alerts.remove(alert);
+        }
         return alerts;
     }
 

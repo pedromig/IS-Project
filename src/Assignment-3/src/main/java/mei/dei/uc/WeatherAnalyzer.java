@@ -8,9 +8,7 @@ import mei.dei.uc.model.Alert;
 import mei.dei.uc.model.Measurement;
 import mei.dei.uc.serdes.AveragePair;
 import mei.dei.uc.serdes.CustomSerdes;
-import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -50,8 +48,8 @@ public class WeatherAnalyzer {
         // getMinTemperatureOfStationsWithRedAlert(weather, alerts);
         // getMaxTemperatureOfLocationWithAlertEventsInLastHour(weather, alerts);
         // getMinTemperaturePerStationInRedAlertZones(weather, alerts);
-       //  getAverageTemperaturePerStation(weather);
-       //  getAverageTemperaturePerStationWithRedAlertsLastHour(weather, alerts);
+        // getAverageTemperaturePerStation(weather);
+        // getAverageTemperaturePerStationWithRedAlertsLastHour(weather, alerts);
 
         // Start Streams
         KafkaStreams streams = new KafkaStreams(builder.build(), properties);
@@ -121,7 +119,7 @@ public class WeatherAnalyzer {
 
     private static void getNumberOfAlertsPerType(KStream<String, String> alerts) {
         alerts.mapValues(WeatherAnalyzer::parseAlert)
-                .map((k, v) -> KeyValue.pair(v.getType().toString(), 1))
+                .map((k, v) -> KeyValue.pair(v.getType(), 1))
                 .groupByKey(Grouped.with(Serdes.String(), Serdes.Integer()))
                 .count()
                 .mapValues((k, v) -> WeatherAnalyzer.jsonToDB(k, "count", "int64", v.toString()))
@@ -236,7 +234,6 @@ public class WeatherAnalyzer {
 
     }
 
-
     private static String jsonToDB(String id, String field, String type, String value) {
         return "{\"schema\":{\"type\":\"struct\",\"fields\":" +
                 "[" +
@@ -248,7 +245,7 @@ public class WeatherAnalyzer {
     }
 
     private static Double toCelsius(double temperature) {
-        return temperature * (9 / 5) + 32;
+        return ((temperature - 32) * (5 / 9.0));
     }
 
     private static Measurement parseMeasurement(String json) {
