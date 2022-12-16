@@ -1,0 +1,1 @@
+../kafka-connect/bin/connect-standalone.sh ../kafka-connect/config/connect-standalone.properties ../kafka-connect/config/source-dbinfo-locations.properties ../kafka-connect/config/source-dbinfo-stations.properties ../kafka-connect/config/sink-results.properties

@@ -45,11 +45,11 @@ public class WeatherAnalyzer {
         getMinMaxTemperatureReadingPerLocation(weather);
         getNumberOfAlertsPerStation(alerts);
         getNumberOfAlertsPerType(alerts);
-        // getMinTemperatureOfStationsWithRedAlert(weather, alerts);
-        // getMaxTemperatureOfLocationWithAlertEventsInLastHour(weather, alerts);
-        // getMinTemperaturePerStationInRedAlertZones(weather, alerts);
-        // getAverageTemperaturePerStation(weather);
-        // getAverageTemperaturePerStationWithRedAlertsLastHour(weather, alerts);
+        getMinTemperatureOfStationsWithRedAlert(weather, alerts);
+        getMaxTemperatureOfLocationWithAlertEventsInLastMinute(weather, alerts);
+        getMinTemperaturePerStationInRedAlertZones(weather, alerts);
+        getAverageTemperaturePerStation(weather);
+        getAverageTemperaturePerStationWithRedAlertsLastMinute(weather, alerts);
 
         // Start Streams
         KafkaStreams streams = new KafkaStreams(builder.build(), properties);
@@ -112,7 +112,7 @@ public class WeatherAnalyzer {
                 .map((k, v) -> KeyValue.pair(v.getStation().getName(), 1))
                 .groupByKey(Grouped.with(Serdes.String(), Serdes.Integer()))
                 .count()
-                .mapValues((k, v) -> WeatherAnalyzer.jsonToDB(k, "count", "int64", v.toString()))
+                .mapValues((k, v) -> WeatherAnalyzer.jsonToDB(k, "countAlerts", "int64", v.toString()))
                 .toStream()
                 .to(RESULTS_WEATHER_TOPIC);
     }
@@ -128,9 +128,9 @@ public class WeatherAnalyzer {
     }
 
     private static void getMinTemperatureOfStationsWithRedAlert(KStream<String, String> weather, KStream<String, String> alerts) {
-        KStream<String, Double> weatherStream = weather
+        KStream<String, String> weatherStream = weather
                 .mapValues(WeatherAnalyzer::parseMeasurement)
-                .map((k, v) -> KeyValue.pair(v.getStation().getName(), v.getTemperature()));
+                .map((k, v) -> KeyValue.pair(v.getStation().getName(), Double.toString(v.getTemperature())));
 
         KTable<String, String> alertTypeTable = alerts
                 .mapValues(WeatherAnalyzer::parseAlert)
@@ -139,6 +139,7 @@ public class WeatherAnalyzer {
                 .toTable();
 
         weatherStream.join(alertTypeTable, (temperature, alert) -> temperature)
+                .map((k, v) -> KeyValue.pair(k, Double.parseDouble(v)))
                 .groupByKey(Grouped.with(Serdes.String(), Serdes.Double()))
                 .reduce(Math::min)
                 .mapValues(WeatherAnalyzer::toCelsius)
@@ -147,46 +148,46 @@ public class WeatherAnalyzer {
                 .to(RESULTS_WEATHER_TOPIC);
     }
 
-    private static void getMaxTemperatureOfLocationWithAlertEventsInLastHour(KStream<String, String> weather,
+    private static void getMaxTemperatureOfLocationWithAlertEventsInLastMinute(KStream<String, String> weather,
                                                                              KStream<String, String> alerts) {
-        KStream<String, Double> weatherStream = weather
+        KStream<String, String> weatherStream = weather
                 .mapValues(WeatherAnalyzer::parseMeasurement)
-                .map((k, v) -> KeyValue.pair(v.getLocation(), v.getTemperature()));
+                .map((k, v) -> KeyValue.pair(v.getLocation(), Double.toString(v.getTemperature())));
 
-        KTable<String, Long> locationWithEventsTable = alerts
+        KTable<String, String> locationWithEventsTable = alerts
                 .mapValues(WeatherAnalyzer::parseAlert)
                 .map((k, v) -> KeyValue.pair(v.getLocation(), v.getEvent()))
                 .groupByKey(Grouped.with(Serdes.String(), Serdes.String()))
-                .windowedBy(TimeWindows.ofSizeWithNoGrace(Duration.ofHours(1)))
+                .windowedBy(TimeWindows.ofSizeWithNoGrace(Duration.ofMinutes(1)))
                 .count()
                 .toStream()
-                .map((k, v) -> KeyValue.pair(k.key(), v))
+                .map((k, v) -> KeyValue.pair(k.key(), String.valueOf(v)))
                 .toTable();
 
         weatherStream.join(locationWithEventsTable, (temperature, eventCount) -> temperature)
+                .map((k, v) -> KeyValue.pair(k, Double.parseDouble(v)))
                 .groupByKey(Grouped.with(Serdes.String(), Serdes.Double()))
                 .reduce(Math::max)
                 .mapValues(WeatherAnalyzer::toCelsius)
-                .mapValues((k, v) -> WeatherAnalyzer.jsonToDB(k, "maxTemperatureAlertEvents", "double", v.toString()))
+                .mapValues((k, v) -> WeatherAnalyzer.jsonToDB(k, "maxTemperatureAlertEventsWindowed", "double", v.toString()))
                 .toStream()
                 .to(RESULTS_LOCATION_TOPIC);
     }
 
     public static void getMinTemperaturePerStationInRedAlertZones(KStream<String, String> weather,
                                                                   KStream<String, String> alerts) {
-        KStream<String, KeyValue<String, Double>> weatherStream = weather
+        KStream<String, String> weatherStream = weather
                 .mapValues(WeatherAnalyzer::parseMeasurement)
-                .map((k, v) -> KeyValue.pair(v.getLocation(),
-                        KeyValue.pair(v.getStation().getName(), v.getTemperature())));
+                .map((k, v) -> KeyValue.pair(v.getStation().getName(), Double.toString(v.getTemperature())));
 
         KTable<String, String> redAlertsLocation = alerts
                 .mapValues(WeatherAnalyzer::parseAlert)
-                .map((k, v) -> KeyValue.pair(v.getLocation(), v.getType()))
+                .map((k, v) -> KeyValue.pair(v.getStation().getName(), v.getType()))
                 .filter((k, v) -> Objects.equals(v, Alert.SEVERE))
                 .toTable();
 
         weatherStream.join(redAlertsLocation, (station, eventType) -> station)
-                .map((k, v) -> KeyValue.pair(v.key, v.value))
+                .map((k, v) -> KeyValue.pair(k, Double.parseDouble(v)))
                 .groupByKey(Grouped.with(Serdes.String(), Serdes.Double()))
                 .reduce(Math::min)
                 .mapValues(WeatherAnalyzer::toCelsius)
@@ -201,34 +202,37 @@ public class WeatherAnalyzer {
                 .groupByKey(Grouped.with(Serdes.String(), CustomSerdes.AveragePairSerde()))
                 .reduce((acc, x) -> AveragePair.from(acc.key + x.key, acc.value + x.value))
                 .mapValues(v -> v.key / v.value)
+                .mapValues(WeatherAnalyzer::toCelsius)
                 .mapValues((k, v) -> WeatherAnalyzer.jsonToDB(k, "avgTemperature", "double", v.toString()))
                 .toStream()
                 .to(RESULTS_WEATHER_TOPIC);
     }
 
-    public static void getAverageTemperaturePerStationWithRedAlertsLastHour(KStream<String, String> weather,
+    public static void getAverageTemperaturePerStationWithRedAlertsLastMinute(KStream<String, String> weather,
                                                                             KStream<String, String> alerts) {
-        KStream<String, Double> weatherStream = weather
+        KStream<String, String> weatherStream = weather
                 .mapValues(WeatherAnalyzer::parseMeasurement)
-                .map((k, v) -> KeyValue.pair(v.getStation().getName(), v.getTemperature()));
+                .map((k, v) -> KeyValue.pair(v.getStation().getName(), Double.toString(v.getTemperature())));
 
-        KTable<String, Long> stationWithRedAlertsLastHour = alerts
+        KTable<String, String> stationWithRedAlertsLastMinute = alerts
                 .mapValues(WeatherAnalyzer::parseAlert)
                 .map((k, v) -> KeyValue.pair(v.getStation().getName(), v.getType()))
                 .filter((k, v) -> v.equals(Alert.SEVERE))
                 .groupByKey()
-                .windowedBy(TimeWindows.ofSizeWithNoGrace(Duration.ofHours(1)))
+                .windowedBy(TimeWindows.ofSizeWithNoGrace(Duration.ofMinutes(1)))
                 .count()
                 .toStream()
-                .map((k, v) -> KeyValue.pair(k.key(), v))
+                .map((k, v) -> KeyValue.pair(k.key(), String.valueOf(v)))
                 .toTable();
 
-        weatherStream.join(stationWithRedAlertsLastHour, (temperature, alertCount) -> temperature)
+        weatherStream.join(stationWithRedAlertsLastMinute, (temperature, alertCount) -> temperature)
+                .map((k, v) -> KeyValue.pair(k, Double.parseDouble(v)))
                 .map((k, v) -> KeyValue.pair(k, AveragePair.from(v, 1)))
                 .groupByKey(Grouped.with(Serdes.String(), CustomSerdes.AveragePairSerde()))
                 .reduce((acc, x) -> AveragePair.from(acc.key + x.key, acc.value + x.value))
                 .mapValues(v -> v.key / v.value)
-                .mapValues((k, v) -> WeatherAnalyzer.jsonToDB(k, "avgTemperatureRedAlerts", "double", v.toString()))
+                .mapValues(WeatherAnalyzer::toCelsius)
+                .mapValues((k, v) -> WeatherAnalyzer.jsonToDB(k, "avgTemperatureRedAlertsWindowed", "double", v.toString()))
                 .toStream()
                 .to(RESULTS_WEATHER_TOPIC);
 
@@ -244,7 +248,7 @@ public class WeatherAnalyzer {
                 "\"payload\":{\"id\":\"" + id + "\",\"" + field + "\":" + value + "}}";
     }
 
-    private static Double toCelsius(double temperature) {
+    private static Double toCelsius(Double temperature) {
         return ((temperature - 32) * (5 / 9.0));
     }
 
